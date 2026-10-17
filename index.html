@@ -1,5 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Crayon Corner</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Nunito:wght@500;700&display=swap">
 <style>
@@ -16,8 +21,10 @@
   --body:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:light;
 }
+[hidden]{display:none!important}
+*,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
-body{background:var(--table);color:var(--ink);font-family:var(--body);overflow:hidden;
+body{margin:0;background:var(--table);color:var(--ink);font-family:var(--body);overflow:hidden;
   background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1.5px);background-size:22px 22px;
   -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
@@ -85,6 +92,8 @@ button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
 .brushdot{width:30px;height:30px;border-radius:50%;background:var(--cur,#e63946);border:3px solid var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+</head>
+<body>
 
 <section id="picker" class="screen">
   <div class="brand">
@@ -375,3 +384,6 @@ clearBtn.onclick=()=>{
 document.documentElement.style.setProperty("--cur",cur);
 })();
 </script>
+
+</body>
+</html>
