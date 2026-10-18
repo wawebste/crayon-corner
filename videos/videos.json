@@ -1278,14 +1278,81 @@
   },
   {
    "name": "Connor",
-   "channels": [],
+   "channels": [
+    {
+     "id": "UCq4qiifOaFGW3a2oljSfxUg",
+     "count": 20,
+     "name": "Half-Asleep Chris"
+    },
+    {
+     "id": "UCY1kMZp36IQSyNx_9h4mpCg",
+     "count": 20,
+     "name": "Mark Rober"
+    },
+    {
+     "id": "UCMyOj6fhvKFMjxUCp3b_3gA",
+     "count": 20,
+     "name": "Nick DiGiovanni"
+    },
+    {
+     "id": "UC4rlAVgAK0SGk-yTfe48Qpw",
+     "count": 20,
+     "name": "BRIGHT SIDE"
+    },
+    {
+     "id": "UCAOtE1V7Ots4DjM8JLlrYgg",
+     "count": 20,
+     "name": "Peppa Pig - Official Channel"
+    },
+    {
+     "id": "UC2UhuvjTIrR0Ck2KrkvRcuA",
+     "count": 20,
+     "name": "Ben and Holly’s Little Kingdom – Official Channel"
+    },
+    {
+     "id": "UCVzLLZkDuFGAE2BGdBuBNBg",
+     "count": 20,
+     "name": "Bluey - Official Channel"
+    }
+   ],
    "upnext": false
   },
   {
    "name": "Keegan",
-   "channels": [],
+   "channels": [
+    {
+     "id": "UCAOtE1V7Ots4DjM8JLlrYgg",
+     "count": 20,
+     "name": "Peppa Pig - Official Channel"
+    },
+    {
+     "id": "UC2UhuvjTIrR0Ck2KrkvRcuA",
+     "count": 20,
+     "name": "Ben and Holly’s Little Kingdom – Official Channel"
+    },
+    {
+     "id": "UCVzLLZkDuFGAE2BGdBuBNBg",
+     "count": 20,
+     "name": "Bluey - Official Channel"
+    },
+    {
+     "id": "UCubmcUb9xSSJB_U8Wz4rQ-Q",
+     "count": 20,
+     "name": "Let's Go Dream Dolls"
+    },
+    {
+     "id": "UCvthuVsurPaVz2a7_4LepGg",
+     "count": 20,
+     "name": "Family Fun Pack"
+    },
+    {
+     "id": "UCKn8CIq9zM5DDMkyUIew_5A",
+     "count": 20,
+     "name": "jhousejr"
+    }
+   ],
    "upnext": true
   }
  ],
- "updated": "2026-10-18T16:16:38Z"
+ "updated": "2026-10-18T16:19:45Z"
 }
