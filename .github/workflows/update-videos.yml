@@ -1,0 +1,47 @@
+name: Update video list
+
+on:
+  # twice a day (times are UTC: about 5am and 5pm Eastern)
+  schedule:
+    - cron: "17 9,21 * * *"
+  # right away whenever the channel list changes
+  push:
+    paths:
+      - "videos/channels.txt"
+      - "videos/update_videos.py"
+  # a "Run workflow" button on the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-videos
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch the newest videos
+        run: python3 videos/update_videos.py
+
+      - name: Save the list
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- videos/videos.json; then
+            echo "Video list unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add videos/videos.json
+          git commit -m "Update video list"
+          git pull --rebase
+          git push
+          # make sure the website picks up the new list
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" || true
