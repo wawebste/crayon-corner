@@ -54,9 +54,14 @@ button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
 .topic[aria-pressed="true"]{background:var(--sun)}
 
 /* ---------- Coloring ---------- */
-#studio{display:grid;gap:12px;grid-template-columns:96px minmax(0,1fr) 84px;grid-template-areas:"crayons stage tools"}
+#studio{display:grid;gap:12px;grid-template-columns:96px minmax(0,1fr) 84px;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"crayons pats tools" "crayons stage tools"}
+.pats{grid-area:pats;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.pat{width:54px;height:54px;border-radius:50%;padding:4px;background:var(--chip);box-shadow:0 4px 0 var(--table-deep);position:relative}
+.pat canvas{width:100%;height:100%;border-radius:50%;display:block}
+.pat[aria-pressed="true"]{background:var(--sun);transform:translateY(-3px)}
+.pat:active{transform:translateY(2px);box-shadow:0 1px 0 var(--table-deep)}
 @media (orientation:portrait){
-  #studio{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"tools" "stage" "crayons"}
+  #studio{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"tools" "pats" "stage" "crayons"}
 }
 .stage{grid-area:stage;position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
 .sheet{position:relative;background:var(--paper);border-radius:6px;box-shadow:0 10px 0 rgba(0,0,0,.18);touch-action:none}
@@ -92,7 +97,7 @@ button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
 .tool .lbl{position:absolute;bottom:-18px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
 .spacer{flex:1}
 @media (orientation:portrait){.spacer{display:none}.tool .lbl{display:none}}
-.brushdot{width:30px;height:30px;border-radius:50%;background:var(--cur,#e63946);border:3px solid var(--ink)}
+.brushdot{width:30px;height:30px;border-radius:50%;background:var(--cur,#e63946);background-size:cover;border:3px solid var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -113,6 +118,7 @@ button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
 
 <section id="studio" class="screen" hidden>
   <div class="crayons" id="crayons" role="toolbar" aria-label="Colors"></div>
+  <div class="pats" id="pats" role="toolbar" aria-label="Patterns"></div>
   <div class="stage" id="stage">
     <div class="sheet" id="sheet">
       <canvas id="colorLayer"></canvas>
@@ -587,9 +593,57 @@ COLORS.forEach((c,i)=>{
   b.setAttribute("aria-pressed",i===0?"true":"false");
   b.innerHTML='<span class="body"></span><span class="tip"></span>';
   b.onclick=()=>{cur=c;document.documentElement.style.setProperty("--cur",c);
-    crayBox.querySelectorAll(".crayon").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));};
+    crayBox.querySelectorAll(".crayon").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));drawPatButtons();};
   crayBox.appendChild(b);
 });
+
+/* ---------- Patterns (work with any crayon color, for Fill and Draw) ---------- */
+const PATS=[["plain","Plain color"],["stripes","Stripes"],["zigzag","Zigzags"],["dots","Polka dots"],["glitter","Glitter"]];
+let pat="plain";const tileCache={};
+function rgbOf(c){const n=parseInt(c.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255];}
+function mix(c,k,to){const v=rgbOf(c),t=to==="dark"?0:255;return "rgb("+v.map(x=>Math.round(x+(t-x)*k)).join(",")+")";}
+function lightness(c){const [r,g,b]=rgbOf(c);return (r*3+g*6+b)/10;}
+function tile(name,c){
+  const key=name+c;if(tileCache[key])return tileCache[key];
+  const T=name==="glitter"?64:48,t=document.createElement("canvas");t.width=t.height=T;const g=t.getContext("2d");
+  const light=lightness(c)>200, bg=light?mix(c,.25,"dark"):mix(c,.6);   // white/yellow crayons get a darker partner
+  if(name==="stripes"){g.fillStyle=bg;g.fillRect(0,0,T,T);g.strokeStyle=c;g.lineWidth=10;g.lineCap="square";
+    for(let i=-T;i<=T;i+=24){g.beginPath();g.moveTo(i,T);g.lineTo(i+T,0);g.stroke();}}
+  else if(name==="zigzag"){g.fillStyle=bg;g.fillRect(0,0,T,T);g.strokeStyle=c;g.lineWidth=6;g.lineJoin="miter";
+    [12,36].forEach(y=>{g.beginPath();g.moveTo(-6,y+6);for(let x=6;x<=T+6;x+=12)g.lineTo(x,((x/12)%2)?y-6:y+6);g.stroke();});}
+  else if(name==="dots"){g.fillStyle=bg;g.fillRect(0,0,T,T);g.fillStyle=c;
+    [[12,12],[36,36]].forEach(([x,y])=>{g.beginPath();g.arc(x,y,7,0,Math.PI*2);g.fill();});}
+  else if(name==="glitter"){g.fillStyle=c;g.fillRect(0,0,T,T);
+    let seed=7;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+    const cols=["rgba(255,255,255,.95)",mix(c,.45),mix(c,.35,"dark"),"rgba(255,255,255,.6)"];
+    for(let i=0;i<90;i++){g.fillStyle=cols[i%4];const s=1+Math.floor(rnd()*3);g.fillRect(Math.floor(rnd()*T),Math.floor(rnd()*T),s,s);}
+    g.fillStyle="#fff";for(let i=0;i<5;i++){const x=rnd()*T,y=rnd()*T,s=3+rnd()*3;
+      g.beginPath();g.moveTo(x,y-s);g.lineTo(x+s*.3,y-s*.3);g.lineTo(x+s,y);g.lineTo(x+s*.3,y+s*.3);g.lineTo(x,y+s);g.lineTo(x-s*.3,y+s*.3);g.lineTo(x-s,y);g.lineTo(x-s*.3,y-s*.3);g.closePath();g.fill();}}
+  else{g.fillStyle=c;g.fillRect(0,0,T,T);}
+  return tileCache[key]=t;
+}
+// the paint for a canvas whose top-left sits at page position (ox,oy), so patterns line up across strokes
+function paint(ctx,ox,oy){
+  if(pat==="plain")return cur;
+  const p=ctx.createPattern(tile(pat,cur),"repeat");
+  try{p.setTransform(new DOMMatrix().translate(-ox,-oy));}catch(e){}
+  return p;
+}
+const patBox=$("#pats");
+PATS.forEach(([name,label])=>{
+  const b=document.createElement("button");b.className="pat";b.dataset.p=name;b.setAttribute("aria-label",label);
+  b.setAttribute("aria-pressed",name===pat?"true":"false");
+  const cv=document.createElement("canvas");cv.width=cv.height=92;b.appendChild(cv);
+  b.onclick=()=>{pat=name;patBox.querySelectorAll(".pat").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));drawPatButtons();};
+  patBox.appendChild(b);
+});
+function drawPatButtons(){
+  patBox.querySelectorAll(".pat").forEach(b=>{const cv=b.querySelector("canvas"),g=cv.getContext("2d");
+    g.clearRect(0,0,92,92);g.fillStyle=g.createPattern(tile(b.dataset.p,cur),"repeat");g.fillRect(0,0,92,92);});
+  const dot=document.querySelector(".brushdot");
+  if(dot)dot.style.backgroundImage=pat==="plain"?"":"url("+tile(pat,cur).toDataURL()+")";
+}
+drawPatButtons();
 
 /* ---------- Saved pictures (kept on this tablet until Start over) ---------- */
 const store=(function(){let dbp=null;
@@ -658,35 +712,68 @@ function queueSave(){clearTimeout(saveT);saveT=setTimeout(saveNow,600);}
 function snap(){undo.push(cx.getImageData(0,0,W,H));if(undo.length>15)undo.shift();}
 function hex(c){const n=parseInt(c.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255];}
 
-function fill(px,py){
-  if(px<0||py<0||px>=W||py>=H)return;
+// Find the space (between the lines) at a point. Returns its outline as a mask:
+// the open pixels plus the pixels just under the ink, so no white halo is left.
+function regionAt(px,py){
+  px=Math.floor(px);py=Math.floor(py);
+  if(px<0||py<0||px>=W||py>=H)return null;
   let start=py*W+px;
   if(wall[start]){ // tapped on a line: nudge to the nearest open spot
     let best=-1;for(let r=1;r<8&&best<0;r++)for(let dy=-r;dy<=r&&best<0;dy++)for(let dx=-r;dx<=r;dx++){
       const x=px+dx,y=py+dy;if(x>=0&&y>=0&&x<W&&y<H&&!wall[y*W+x]){best=y*W+x;break;}}
-    if(best<0)return;start=best;}
-  snap();
-  const img=cx.getImageData(0,0,W,H),d=img.data,[r,g,b]=hex(cur);
+    if(best<0)return null;start=best;}
   const seen=new Uint8Array(W*H),stack=[start];seen[start]=1;
-  const paint=k=>{const o=k*4;d[o]=r;d[o+1]=g;d[o+2]=b;d[o+3]=255;};
-  while(stack.length){const k=stack.pop();paint(k);const x=k%W;
+  let x0=W,y0=H,x1=0,y1=0;
+  const mark=k=>{seen[k]=2;const x=k%W,y=(k/W)|0;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;};
+  while(stack.length){const k=stack.pop();mark(k);const x=k%W;
     const nb=[x>0?k-1:-1,x<W-1?k+1:-1,k-W,k+W];
     for(const n of nb){if(n<0||n>=W*H||seen[n])continue;seen[n]=1;
-      if(wall[n]){paint(n);continue;} // color one pixel under the ink so no white halo
+      if(wall[n]){mark(n);continue;}
       stack.push(n);}
   }
-  cx.putImageData(img,0,0);queueSave();
+  const w=x1-x0+1,h=y1-y0+1,m=document.createElement("canvas");m.width=w;m.height=h;
+  const mg=m.getContext("2d"),img=mg.createImageData(w,h),d=img.data;
+  for(let y=y0;y<=y1;y++){let k=y*W+x0,o=((y-y0)*w)*4+3;for(let x=x0;x<=x1;x++,k++,o+=4)if(seen[k]===2)d[o]=255;}
+  mg.putImageData(img,0,0);
+  return {x0,y0,w,h,mask:m};
+}
+const tmp=document.createElement("canvas"),tg=tmp.getContext("2d");
+// paint a box of the page through a region's mask
+function paintIn(reg,bx,by,bw,bh,draw){
+  const ax=Math.max(bx,reg.x0),ay=Math.max(by,reg.y0),ex=Math.min(bx+bw,reg.x0+reg.w),ey=Math.min(by+bh,reg.y0+reg.h);
+  if(ex<=ax||ey<=ay)return;
+  const w=ex-ax,h=ey-ay;
+  if(tmp.width<w||tmp.height<h){tmp.width=Math.max(tmp.width,w);tmp.height=Math.max(tmp.height,h);}
+  tg.save();tg.globalCompositeOperation="source-over";tg.clearRect(0,0,w,h);
+  tg.translate(-ax,-ay);draw(tg,ax,ay);tg.restore();
+  tg.save();tg.globalCompositeOperation="destination-in";tg.drawImage(reg.mask,ax-reg.x0,ay-reg.y0,w,h,0,0,w,h);tg.restore();
+  cx.drawImage(tmp,0,0,w,h,ax,ay,w,h);
+}
+function fill(px,py){
+  const reg=regionAt(px,py);if(!reg)return;
+  snap();
+  paintIn(reg,reg.x0,reg.y0,reg.w,reg.h,(g,ox,oy)=>{g.fillStyle=paint(g,0,0);g.fillRect(ox,oy,reg.w,reg.h);});
+  queueSave();
 }
 
-let drawing=false,last=null;
+// Draw: the crayon stays inside the space where the stroke started
+let drawing=false,last=null,brushReg=null;
 function toCanvas(e){const b=sheet.getBoundingClientRect();return[(e.clientX-b.left)*W/b.width,(e.clientY-b.top)*H/b.height];}
 sheet.addEventListener("pointerdown",e=>{e.preventDefault();disarm();const [x,y]=toCanvas(e);
-  if(mode==="fill"){fill(Math.floor(x),Math.floor(y));return;}
+  if(mode==="fill"){fill(x,y);return;}
+  brushReg=regionAt(x,y);if(!brushReg)return;
   snap();drawing=true;last=[x,y];sheet.setPointerCapture(e.pointerId);stroke(x,y);});
 sheet.addEventListener("pointermove",e=>{if(!drawing)return;const [x,y]=toCanvas(e);stroke(x,y);});
-["pointerup","pointercancel"].forEach(t=>sheet.addEventListener(t,()=>{if(drawing)queueSave();drawing=false;}));
-function stroke(x,y){cx.strokeStyle=cur;cx.lineWidth=Math.max(W,H)/40;cx.lineCap="round";cx.lineJoin="round";
-  cx.beginPath();cx.moveTo(last[0],last[1]);cx.lineTo(x+.01,y);cx.stroke();last=[x,y];}
+["pointerup","pointercancel"].forEach(t=>sheet.addEventListener(t,()=>{if(drawing)queueSave();drawing=false;brushReg=null;}));
+function stroke(x,y){
+  const lw=Math.max(W,H)/40,p=lw/2+2;
+  const bx=Math.floor(Math.min(last[0],x)-p),by=Math.floor(Math.min(last[1],y)-p);
+  const bw=Math.ceil(Math.abs(x-last[0])+p*2)+1,bh=Math.ceil(Math.abs(y-last[1])+p*2)+1;
+  const a=last;
+  paintIn(brushReg,bx,by,bw,bh,g=>{g.strokeStyle=paint(g,0,0);g.lineWidth=lw;g.lineCap="round";g.lineJoin="round";
+    g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(x+.01,y);g.stroke();});
+  last=[x,y];
+}
 
 function setMode(m){mode=m;$("#fillBtn").setAttribute("aria-pressed",m==="fill");$("#brushBtn").setAttribute("aria-pressed",m==="brush");disarm();}
 $("#fillBtn").onclick=()=>setMode("fill");
