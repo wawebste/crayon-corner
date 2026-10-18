@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Letter Fun</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{font-family:'Baloo 2','Comic Sans MS',system-ui,sans-serif;background:linear-gradient(160deg,#e3f7ff 0%,#efe6ff 50%,#fff1d9 100%);color:#3b2f5c}
+  button{font-family:inherit;border:none;cursor:pointer;color:inherit}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column}
+  .screen.on{display:flex}
+
+  .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;min-height:70px}
+  .bar h2{margin:0;font-size:32px;flex:1;text-align:center}
+  .back,.say{width:58px;height:58px;border-radius:50%;background:#fff;font-size:30px;box-shadow:0 4px 0 #d7cde8}
+  .back:active,.say:active{transform:translateY(3px);box-shadow:0 1px 0 #d7cde8}
+  .spacer{width:58px}
+  .stars{min-width:58px;font-size:28px;text-align:right}
+
+  /* Menu */
+  #menu{align-items:center;justify-content:center;gap:22px;padding:16px}
+  #menu h1{margin:0;font-size:clamp(48px,9vw,84px);line-height:1;text-shadow:0 5px 0 #d9ccff}
+  #menu h1 span:nth-child(1){color:#ff6b6b}#menu h1 span:nth-child(2){color:#ffa94d}#menu h1 span:nth-child(3){color:#4dabf7}
+  .cards{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+  .card{width:196px;height:190px;border-radius:30px;font-size:28px;font-weight:800;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;line-height:1.1;box-shadow:0 8px 0 rgba(0,0,0,.18)}
+  .card b{font-size:66px;line-height:1}
+  .card:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .range{display:flex;gap:10px;align-items:center}
+  .pill{padding:6px 24px;border-radius:999px;background:#fff;font-size:28px;font-weight:800;box-shadow:0 4px 0 #d7cde8}
+  .pill.sel{background:#7c5cff;color:#fff;box-shadow:0 4px 0 #5a3fd1}
+  .home{position:absolute;top:14px;left:16px;text-decoration:none;color:#3b2f5c;background:#fff;padding:8px 18px;border-radius:999px;font-size:22px;font-weight:800;box-shadow:0 4px 0 #d7cde8}
+
+  .prompt{text-align:center;font-size:34px;font-weight:800;margin:0 12px;min-height:46px}
+  .play{flex:1;display:flex;align-items:center;justify-content:center;gap:34px;flex-wrap:wrap;padding:10px 16px 20px}
+  .pulse{animation:pulse .35s}
+
+  /* ABC grid */
+  .grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);gap:12px;padding:6px 20px 20px;align-content:center;max-width:900px;width:100%;margin:0 auto}
+  .tile{aspect-ratio:1.35;border-radius:22px;color:#fff;font-size:46px;font-weight:800;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+  .tile:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+
+  /* Letter detail */
+  .letterbig{font-size:170px;font-weight:800;line-height:1;background:none;text-shadow:0 6px 0 rgba(0,0,0,.08)}
+  .pic{display:flex;flex-direction:column;align-items:center;background:#fff;border-radius:34px;padding:16px 34px 10px;box-shadow:0 7px 0 #e2d8f0}
+  .pic .emo{font-size:130px;line-height:1.1}
+  .pic .w{font-size:46px;font-weight:800}
+  .arrow{width:74px;height:74px;border-radius:50%;background:#fff;font-size:40px;box-shadow:0 5px 0 #d7cde8}
+  .arrow:disabled{opacity:.3}
+  .tracebtn{padding:8px 26px;border-radius:999px;background:#7c5cff;color:#fff;font-size:26px;font-weight:800;box-shadow:0 5px 0 #5a3fd1;margin-top:10px}
+  .tracebtn:active{transform:translateY(4px);box-shadow:0 1px 0 #5a3fd1}
+  .col{display:flex;flex-direction:column;align-items:center}
+
+  /* Quizzes */
+  .target{font-size:150px;font-weight:800;line-height:1}
+  .bigpic{font-size:150px;line-height:1;background:#fff;border-radius:36px;padding:10px 30px;box-shadow:0 7px 0 #e2d8f0}
+  .choices{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;padding-bottom:22px}
+  .choice{width:120px;height:120px;border-radius:28px;color:#fff;font-size:76px;font-weight:800;line-height:1;box-shadow:0 7px 0 rgba(0,0,0,.2)}
+  .choice:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+  .choice.right{animation:bounce .6s;outline:6px solid #fff}
+  .choice.wrong{animation:shake .45s;opacity:.45}
+
+  /* Trace */
+  .tracewrap{flex:1;display:flex;align-items:center;justify-content:center;gap:20px;padding:0 16px 16px}
+  #pad{background:#fff;border-radius:30px;box-shadow:0 7px 0 #e2d8f0;touch-action:none}
+  .tools{display:flex;flex-direction:column;gap:14px;align-items:center}
+  .dot{width:54px;height:54px;border-radius:50%;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+  .dot.sel{outline:5px solid #3b2f5c}
+  .clear{width:74px;height:74px;border-radius:50%;background:#fff;font-size:36px;box-shadow:0 5px 0 #d7cde8}
+
+  .cf{position:fixed;top:-20px;width:14px;height:20px;border-radius:4px;pointer-events:none;animation:fall linear forwards;z-index:9}
+  @keyframes pulse{50%{transform:scale(1.2)}}
+  @keyframes popin{from{transform:scale(0)}70%{transform:scale(1.12)}}
+  @keyframes bounce{30%{transform:scale(1.25)}60%{transform:scale(.95)}}
+  @keyframes shake{20%,60%{transform:translateX(-12px)}40%,80%{transform:translateX(12px)}}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  @media (max-height:620px){
+    .letterbig{font-size:120px}.pic .emo{font-size:96px}.pic .w{font-size:36px}
+    .target,.bigpic{font-size:110px}.choice{width:100px;height:100px;font-size:62px}
+    .card{height:160px}.card b{font-size:54px}
+  }
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<section class="screen on" id="menu">
+  <a class="home" href="../index.html">🏠 All Apps</a>
+  <h1><span>A</span><span>B</span><span>C</span> Letter Fun</h1>
+  <div class="cards">
+    <button class="card" style="background:#ff6b6b" onclick="go('abc')"><b>🔤</b>ABC</button>
+    <button class="card" style="background:#4dabf7" onclick="go('find')"><b>🔍</b>Find the<br>Letter</button>
+    <button class="card" style="background:#69db7c" onclick="go('first')"><b>🍎</b>First<br>Letter</button>
+    <button class="card" style="background:#ffa94d" onclick="go('trace')"><b>✏️</b>Trace</button>
+  </div>
+  <div class="range">
+    <button class="pill" data-mode="upper" onclick="setMode('upper')">ABC</button>
+    <button class="pill" data-mode="lower" onclick="setMode('lower')">abc</button>
+    <button class="pill" data-mode="match" onclick="setMode('match')">Aa</button>
+  </div>
+</section>
+
+<!-- ABC GRID -->
+<section class="screen" id="abc">
+  <div class="bar"><button class="back" onclick="go('menu')">⬅</button><h2>Pick a Letter</h2><div class="spacer"></div></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- LETTER DETAIL -->
+<section class="screen" id="detail">
+  <div class="bar"><button class="back" onclick="go('abc')">⬅</button><h2></h2><div class="spacer"></div></div>
+  <div class="play">
+    <button class="arrow" id="dPrev" onclick="openLetter(cur-1)">◀</button>
+    <div class="col">
+      <button class="letterbig" id="dBig" onclick="sayLetter()"></button>
+      <button class="tracebtn" onclick="openTrace(cur)">Trace it ✏️</button>
+    </div>
+    <button class="pic" id="dPic" onclick="sayLetter()"><span class="emo" id="dEmo"></span><span class="w" id="dWord"></span></button>
+    <button class="arrow" id="dNext" onclick="openLetter(cur+1)">▶</button>
+  </div>
+</section>
+
+<!-- FIND THE LETTER -->
+<section class="screen" id="find">
+  <div class="bar"><button class="back" onclick="go('menu')">⬅</button><h2>Find the Letter</h2><div class="stars" id="fStars">⭐ 0</div></div>
+  <div class="prompt" id="fPrompt"></div>
+  <div class="play"><button class="say" onclick="repeatQ()" style="width:84px;height:84px;font-size:42px">🔊</button><div class="target" id="fTarget"></div></div>
+  <div class="choices" id="fChoices"></div>
+</section>
+
+<!-- FIRST LETTER -->
+<section class="screen" id="first">
+  <div class="bar"><button class="back" onclick="go('menu')">⬅</button><h2>First Letter</h2><div class="stars" id="sStars">⭐ 0</div></div>
+  <div class="prompt" id="sPrompt"></div>
+  <div class="play"><button class="bigpic" id="sPic" onclick="repeatQ()"></button></div>
+  <div class="choices" id="sChoices"></div>
+</section>
+
+<!-- TRACE -->
+<section class="screen" id="trace">
+  <div class="bar"><button class="back" id="tBack" onclick="go('menu')">⬅</button><h2 id="tTitle">Trace</h2><div class="spacer"></div></div>
+  <div class="tracewrap">
+    <button class="arrow" id="tPrev" onclick="openTrace(cur-1)">◀</button>
+    <canvas id="pad"></canvas>
+    <div class="tools" id="tools">
+      <button class="clear" onclick="clearPad()">🧽</button>
+    </div>
+    <button class="arrow" id="tNext" onclick="openTrace(cur+1)">▶</button>
+  </div>
+</section>
+
+<script>
+const ABC='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+// Spoken letter names (reading a lone "A" aloud sounds like "uh" on many voices)
+const SAY=['ay','bee','see','dee','ee','eff','jee','aitch','eye','jay','kay','ell','em','en','oh','pee','cue','ar','ess','tee','you','vee','double you','ex','why','zee'];
+const PICS=[['🍎','Apple'],['🐻','Bear'],['🐱','Cat'],['🐶','Dog'],['🐘','Elephant'],['🐟','Fish'],['🍇','Grapes'],['🏠','House'],['🍦','Ice cream'],['🧃','Juice'],['🔑','Key'],['🦁','Lion'],['🐒','Monkey'],['👃','Nose'],['🐙','Octopus'],['🐷','Pig'],['👸','Queen'],['🌈','Rainbow'],['☀️','Sun'],['🐢','Turtle'],['☂️','Umbrella'],['🎻','Violin'],['🐋','Whale'],['🦊','Fox'],['🧶','Yarn'],['🦓','Zebra']];
+const COLORS=['#ff6b6b','#ffa94d','#f5b700','#40c057','#20c997','#339af0','#5c7cfa','#be4bdb','#f06595'];
+
+const $=s=>document.querySelector(s);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
+const color=i=>COLORS[i%COLORS.length];
+
+let mode='upper', screen='menu', run=0, cur=0, stars=0, last=-1, again=null;
+try{const m=localStorage.getItem('letterfun-mode'); if(['upper','lower','match'].includes(m)) mode=m;}catch(e){}
+const show=(i,upper)=>upper?ABC[i]:ABC[i].toLowerCase();
+const shown=i=>show(i,mode!=='lower');                 // how a letter appears in this mode
+
+/* ---------- sound & speech ---------- */
+let ac;
+function tone(f,d,type){
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=type||'sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.18,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.12));
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime+(d||0.12));
+  }catch(e){}
+}
+function cheer(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.2),i*110));}
+function speak(t){
+  try{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t); u.rate=0.85; u.pitch=1.15;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function pulse(el){el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');}
+function confetti(){
+  for(let i=0;i<32;i++){
+    const s=document.createElement('div'); s.className='cf';
+    s.style.left=Math.random()*100+'vw'; s.style.background=pick(COLORS);
+    s.style.animationDuration=(1.3+Math.random())+'s'; s.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(s); setTimeout(()=>s.remove(),2800);
+  }
+}
+function forLine(i){return i===23 ? 'ex. Fox has an ex at the end.' : SAY[i]+' is for '+PICS[i][1]+'.';}
+
+/* ---------- navigation ---------- */
+function showScreen(id){screen=id; document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+function go(id){
+  run++; try{speechSynthesis.cancel();}catch(e){}
+  showScreen(id);
+  if(id==='abc') buildGrid();
+  if(id==='find') newFind();
+  if(id==='first') newFirst();
+  if(id==='trace'){ $('#tBack').onclick=()=>go('menu'); openTrace(0); }
+}
+function setMode(m){
+  mode=m; try{localStorage.setItem('letterfun-mode',m);}catch(e){}
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('sel',p.dataset.mode===m));
+  tone(600);
+}
+function repeatQ(){ if(again) again(); }
+
+/* ---------- ABC ---------- */
+function buildGrid(){
+  const g=$('#grid'); g.innerHTML='';
+  ABC.forEach((L,i)=>{
+    const b=document.createElement('button'); b.className='tile';
+    b.textContent=mode==='match'?L+L.toLowerCase():shown(i);
+    b.style.background=color(i); b.onclick=()=>openLetter(i);
+    g.appendChild(b);
+  });
+}
+function openLetter(i){
+  if(i<0||i>25) return;
+  cur=i; showScreen('detail');
+  const big=$('#dBig'); big.textContent=ABC[i]+ABC[i].toLowerCase(); big.style.color=color(i); pulse(big);
+  $('#dEmo').textContent=PICS[i][0];
+  const w=PICS[i][1];
+  $('#dWord').innerHTML=i===23 ? 'Fo<span style="color:'+color(i)+'">x</span>' : '<span style="color:'+color(i)+'">'+w[0]+'</span>'+w.slice(1);
+  $('#dPrev').disabled=i===0; $('#dNext').disabled=i===25;
+  sayLetter();
+}
+function sayLetter(){ speak(SAY[cur]+'. '+forLine(cur)); pulse($('#dBig')); }
+
+/* ---------- quiz helpers ---------- */
+function newIndex(pool){let i; do{i=pick(pool);}while(i===last && pool.length>1); last=i; return i;}
+function choicesFor(ans,n,pool){
+  const s=new Set([ans]); while(s.size<n) s.add(pick(pool));
+  return shuffle([...s]);
+}
+function buildChoices(row,opts,ans,upper,onRight,starsEl){
+  row.innerHTML=''; let locked=false;
+  opts.forEach((v,k)=>{
+    const b=document.createElement('button'); b.className='choice';
+    b.textContent=show(v,upper); b.style.background=COLORS[(k*2+1)%COLORS.length];
+    b.onclick=()=>{
+      if(locked||b.classList.contains('wrong')) return;
+      if(v===ans){
+        locked=true; b.classList.add('right'); stars++;
+        $('#fStars').textContent=$('#sStars').textContent='⭐ '+stars;
+        cheer(); confetti(); onRight();
+        const my=run; setTimeout(()=>{ if(my===run) (screen==='find'?newFind:newFirst)(); },2600);
+      } else {
+        b.classList.add('wrong'); tone(180,0.25,'triangle');
+        speak('That is '+SAY[v]+'. Try again!');
+      }
+    };
+    row.appendChild(b);
+  });
+}
+
+/* ---------- Find the Letter ---------- */
+function newFind(){
+  if(screen!=='find') return;
+  const all=ABC.map((_,i)=>i), ans=newIndex(all), t=$('#fTarget');
+  if(mode==='match'){
+    t.textContent=ABC[ans]; t.style.color=color(ans);
+    $('#fPrompt').textContent='Find the little '+ABC[ans].toLowerCase()+'!';
+    again=()=>speak('This is big '+SAY[ans]+'. Find the little '+SAY[ans]+'!');
+  } else {
+    t.textContent='';
+    $('#fPrompt').textContent='Listen, then tap the letter!';
+    again=()=>speak('Find the letter '+SAY[ans]+'!');
+  }
+  again();
+  buildChoices($('#fChoices'),choicesFor(ans,4,all),ans,mode==='upper',
+    ()=>speak('Yes! '+SAY[ans]+'! '+forLine(ans)));
+}
+
+/* ---------- First Letter ---------- */
+function newFirst(){
+  if(screen!=='first') return;
+  const pool=ABC.map((_,i)=>i).filter(i=>i!==23);   // skip X (Fox doesn't start with X)
+  const ans=newIndex(pool), w=PICS[ans][1];
+  $('#sPic').textContent=PICS[ans][0];
+  $('#sPrompt').textContent=w+' starts with…';
+  again=()=>speak(w+'. What letter does '+w+' start with?');
+  again();
+  buildChoices($('#sChoices'),choicesFor(ans,3,pool),ans,mode!=='lower',
+    ()=>speak('Yes! '+w+' starts with '+SAY[ans]+'!'));
+}
+
+/* ---------- Trace ---------- */
+const INKS=['#ff6b6b','#339af0','#40c057','#be4bdb','#ffa94d'];
+let ink=INKS[0], drawing=false, lastPt=null;
+const pad=$('#pad'), ctx=pad.getContext('2d');
+(function(){
+  const tools=$('#tools');
+  INKS.forEach((c,k)=>{
+    const d=document.createElement('button'); d.className='dot'+(k===0?' sel':''); d.style.background=c;
+    d.onclick=()=>{ink=c; tools.querySelectorAll('.dot').forEach(x=>x.classList.toggle('sel',x===d));};
+    tools.insertBefore(d,tools.lastElementChild);
+  });
+})();
+function sizePad(){
+  const h=Math.max(240,Math.min(window.innerHeight-110,window.innerWidth-300));
+  const dpr=window.devicePixelRatio||1;
+  pad.style.width=pad.style.height=h+'px';
+  pad.width=pad.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  return h;
+}
+function clearPad(){
+  const h=sizePad(), ch=$('#pad').dataset.ch||'A';
+  ctx.clearRect(0,0,h,h);
+  ctx.fillStyle='#ece6f7'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='800 '+Math.round(h*0.82)+"px 'Baloo 2','Comic Sans MS',sans-serif";
+  ctx.fillText(ch,h/2,h*0.56);
+}
+function openTrace(i){
+  if(i<0||i>25) return;
+  const fromDetail=screen==='detail';
+  cur=i; showScreen('trace');
+  if(fromDetail) $('#tBack').onclick=()=>openLetter(cur);
+  const ch=mode==='lower'?ABC[i].toLowerCase():ABC[i];
+  $('#pad').dataset.ch=ch; $('#tTitle').textContent='Trace '+ch;
+  $('#tPrev').disabled=i===0; $('#tNext').disabled=i===25;
+  clearPad(); speak('Trace the letter '+SAY[i]+'!');
+}
+function pt(e){const r=pad.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top};}
+function stroke(a,b){
+  ctx.strokeStyle=ink; ctx.lineWidth=Math.max(14,pad.clientWidth/22); ctx.lineCap=ctx.lineJoin='round';
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+}
+pad.addEventListener('pointerdown',e=>{drawing=true; lastPt=pt(e); stroke(lastPt,lastPt); try{pad.setPointerCapture(e.pointerId);}catch(_){} });
+pad.addEventListener('pointermove',e=>{ if(!drawing) return; const p=pt(e); stroke(lastPt,p); lastPt=p; });
+['pointerup','pointercancel','pointerleave'].forEach(t=>pad.addEventListener(t,()=>{drawing=false;}));
+window.addEventListener('resize',()=>{ if(screen==='trace') clearPad(); });
+
+setMode(mode);
+try{document.fonts.ready.then(()=>{ if(screen==='trace') clearPad(); });}catch(e){}
+</script>
+</body>
+</html>
