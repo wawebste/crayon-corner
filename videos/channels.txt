@@ -1,0 +1,17 @@
+# ===== Allowed YouTube channels for the Videos app =====
+#
+# Put one channel on each line. You can use any of these:
+#   @handle                                   e.g.  @SciShowKids
+#   the channel's web address                 e.g.  https://www.youtube.com/@SciShowKids
+#   the channel ID (starts with UC)           looks like  UCxxxxxxxxxxxxxxxxxxxxxx
+#
+# You can add a friendly name after it, and the kids will see that name instead:
+#   @SciShowKids   Science Show
+#
+# Lines starting with # are ignored. Save (commit) the file and the
+# video list updates by itself in a minute or two.
+#
+# The channels below are only examples. Replace them with your own picks.
+
+@SciShowKids
+@Numberblocks
