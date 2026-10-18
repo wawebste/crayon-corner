@@ -4,282 +4,105 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Videos</title>
+<title>Playroom</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Nunito:wght@600;800&display=swap">
 <style>
-/* Layout: a TV room after dark. Channel buttons on top, a wall of video "tapes" below.
-   Watching fills the screen; the kids only ever touch our own big buttons, never YouTube's. */
+/* Layout: a playroom wall. Each app is a toy box sitting on its own wooden shelf plank. */
 :root{
-  --room:#271f4a;        /* plum evening wall */
-  --room-2:#342a62;      /* card / panel */
-  --room-3:#45397d;
-  --ink:#ffffff;
-  --ink-soft:#c9c2ee;
-  --sun:#ffc93c;         /* the one accent */
-  --sun-deep:#d79f12;
-  --shadow:rgba(0,0,0,.28);
+  --wall:#5b6fd6;        /* periwinkle wall */
+  --wall-dot:rgba(255,255,255,.08);
+  --plank:#b7793f;       /* wooden shelf */
+  --plank-edge:#8a5629;
+  --box:#ffffff;
+  --ink:#1f2a33;
+  --sun:#ffc93c;
   --display:"Grandstander","Comic Sans MS","Chalkboard SE",system-ui,sans-serif;
   --body:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  color-scheme:dark;
+  color-scheme:light;
 }
-[hidden]{display:none!important}
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--room);color:var(--ink);font-family:var(--body);overflow:hidden;
-  background-image:radial-gradient(rgba(255,255,255,.05) 2px,transparent 2.5px);background-size:30px 30px;
-  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-button,a{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation;text-decoration:none}
-button:focus-visible,a:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;
+body{margin:0;background:var(--wall);color:var(--ink);font-family:var(--body);
+  background-image:radial-gradient(var(--wall-dot) 2px,transparent 2.5px);background-size:28px 28px;
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+main{min-height:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(24px,5vh,48px);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-bottom,0px))}
+  padding-block:max(28px,env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-bottom,0px))}
 
-/* ---------- Browse ---------- */
-#browse{overflow-y:auto;gap:16px}
-.top{display:flex;align-items:center;gap:14px;padding-top:6px}
-.top svg.logo{width:54px;height:54px;flex:none}
-.top h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(30px,5vw,44px);letter-spacing:.5px}
-.pill{display:flex;align-items:center;gap:8px;background:#fff;color:#1f2a33;font-family:var(--display);font-weight:800;font-size:18px;
-  padding:10px 18px 10px 12px;border-radius:999px;box-shadow:0 4px 0 var(--shadow)}
-.pill:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
-.pill svg{width:28px;height:28px}
-.top .pill{margin-left:auto}
-.chips{display:flex;flex-wrap:wrap;gap:10px}
-.chip{background:var(--room-3);border-radius:999px;padding:10px 18px;font-family:var(--display);font-weight:600;font-size:18px;box-shadow:0 3px 0 var(--shadow)}
-.chip[aria-pressed="true"]{background:var(--sun);color:#1f2a33}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;padding-bottom:16px}
-.card{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--room-2);border-radius:18px;padding:8px 8px 12px;box-shadow:0 5px 0 var(--shadow);min-width:0}
-.card:active{transform:translateY(4px);box-shadow:0 1px 0 var(--shadow)}
-.thumb{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;background:var(--room-3)}
-.thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.thumb .new{position:absolute;top:8px;left:8px;background:var(--sun);color:#1f2a33;font-family:var(--display);font-weight:800;font-size:14px;padding:2px 10px;border-radius:999px}
-.card .t{font-weight:800;font-size:16px;line-height:1.3;padding:0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card .c{font-size:14px;color:var(--ink-soft);padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.empty{margin:auto;max-width:34rem;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;padding:30px 0}
-.empty h2{margin:0;font-family:var(--display);font-weight:800;font-size:30px}
-.empty p{margin:0;color:var(--ink-soft);font-size:17px;line-height:1.45}
+header{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+h1{margin:0;font-family:var(--display);font-weight:800;color:#fff;font-size:clamp(44px,9vw,84px);line-height:1;letter-spacing:1px;text-wrap:balance;
+  text-shadow:0 5px 0 rgba(0,0,0,.18)}
+h1 .o{display:inline-block;color:var(--sun)}
+.hello{margin:0;color:#e9ecff;font-family:var(--display);font-weight:600;font-size:clamp(18px,3vw,24px)}
 
-/* ---------- Watch ---------- */
-#watch{background:#0d0a1c;gap:10px}
-.bar{display:flex;align-items:center;gap:14px;min-width:0}
-.bar .title{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
-.frame{position:relative;background:#000;border-radius:14px;overflow:hidden;max-width:100%}
-.frame iframe,#player{position:absolute;inset:0;width:100%;height:100%;border:0}
-/* the shield sits over YouTube so taps never reach its links */
-.shield{position:absolute;inset:0;display:grid;place-items:center;background:transparent}
-.shield.cover{background:#000 center/cover no-repeat}
-.shield.cover::before{content:"";position:absolute;inset:0;background:rgba(13,10,28,.45)}
-.block{position:absolute;left:0;right:0;pointer-events:auto}
-.block.t{top:0;height:24%}.block.b{bottom:0;height:24%}
-.bigplay{position:relative;width:min(26vmin,150px);height:min(26vmin,150px);border-radius:50%;background:var(--sun);display:grid;place-items:center;box-shadow:0 8px 0 var(--sun-deep);pointer-events:none}
-.bigplay svg{width:46%;height:46%;margin-left:8%}
-.spinner{position:relative;width:70px;height:70px;border-radius:50%;border:8px solid rgba(255,255,255,.25);border-top-color:var(--sun);animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.ended{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;padding:16px;width:100%}
-.ended .again{background:var(--sun);color:#1f2a33;font-family:var(--display);font-weight:800;font-size:24px;padding:14px 30px;border-radius:999px;box-shadow:0 5px 0 var(--sun-deep);display:flex;gap:10px;align-items:center}
-.ended .again svg{width:26px;height:26px}
-.nextrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;width:100%}
-.nextrow .card{width:min(30%,200px);padding:6px 6px 8px}
-.nextrow .card .t{font-size:14px}
-.msg{position:relative;max-width:26rem;text-align:center;font-family:var(--display);font-weight:600;font-size:22px;padding:20px;line-height:1.35}
-.controls{display:flex;align-items:center;gap:16px}
-.round{width:68px;height:68px;flex:none;border-radius:50%;background:#fff;color:#1f2a33;display:grid;place-items:center;box-shadow:0 4px 0 var(--shadow)}
-.round.main{background:var(--sun);box-shadow:0 4px 0 var(--sun-deep)}
-.round:active{transform:translateY(3px);box-shadow:none}
-.round svg{width:32px;height:32px}
-.seek{flex:1;min-width:0;display:flex;align-items:center;gap:12px;font-variant-numeric:tabular-nums;font-weight:800;color:var(--ink-soft)}
-input[type=range]{flex:1;min-width:0;height:44px;background:transparent;-webkit-appearance:none;appearance:none}
-input[type=range]::-webkit-slider-runnable-track{height:14px;border-radius:7px;background:linear-gradient(var(--sun),var(--sun)) 0/var(--p,0%) 100% no-repeat,var(--room-3)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-10px;border-radius:50%;background:#fff;border:4px solid var(--sun)}
-input[type=range]::-moz-range-track{height:14px;border-radius:7px;background:var(--room-3)}
-input[type=range]::-moz-range-progress{height:14px;border-radius:7px;background:var(--sun)}
-input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid var(--sun)}
-@media (max-width:560px){.seek .time{display:none}.round{width:58px;height:58px}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:3s!important}}
+.shelf{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(20px,4vw,40px);width:100%;max-width:1000px}
+.app{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;width:clamp(200px,40vw,260px);outline:none}
+.box{width:100%;aspect-ratio:1;max-width:100%;background:var(--box);border-radius:28px;display:grid;place-items:center;
+  box-shadow:inset 0 -8px 0 rgba(0,0,0,.08);transition:transform .15s ease}
+.box svg{width:72%;height:72%}
+.app:active .box{transform:translateY(6px) scale(.98)}
+.app:focus-visible .box{outline:6px solid var(--sun);outline-offset:4px}
+.plank{width:118%;height:22px;margin-top:0;background:var(--plank);border-radius:6px;box-shadow:inset 0 -7px 0 var(--plank-edge),0 6px 0 rgba(0,0,0,.12)}
+.name{margin-top:14px;font-family:var(--display);font-weight:800;font-size:clamp(24px,4vw,30px);color:#fff;text-align:center}
+.go{margin-top:10px;display:inline-flex;align-items:center;gap:8px;background:var(--sun);color:var(--ink);font-family:var(--display);font-weight:800;font-size:22px;
+  padding:12px 30px;border-radius:999px;box-shadow:0 5px 0 #d79f12}
+.app:active .go{transform:translateY(4px);box-shadow:0 1px 0 #d79f12}
+.go svg{width:22px;height:22px}
+@media (prefers-reduced-motion:no-preference){
+  .app:hover .box{transform:translateY(-6px) rotate(-1.5deg)}
+}
 </style>
 </head>
 <body>
-
-<section id="browse" class="screen">
-  <div class="top">
-    <svg class="logo" viewBox="0 0 54 54" aria-hidden="true"><path d="M18 6 L27 14 L36 6" fill="none" stroke="#ffc93c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="14" width="48" height="34" rx="8" fill="#ff5a5f"/><rect x="9" y="19" width="30" height="24" rx="4" fill="#fff"/><path d="M20 25 L30 31 L20 37Z" fill="#ff5a5f"/><circle cx="45" cy="24" r="3" fill="#ffc93c"/><circle cx="45" cy="34" r="3" fill="#ffc93c"/></svg>
-    <h1>Videos</h1>
-    <a class="pill" href="../" aria-label="Back to all apps"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"><path d="M5 17 L18 6 L31 17"/><path d="M9 15 V30 H27 V15"/><path d="M15 30 V22 H21 V30"/></svg>All apps</a>
-  </div>
-  <div class="chips" id="chips" role="toolbar" aria-label="Channels"></div>
-  <div class="grid" id="grid"></div>
-  <div class="empty" id="empty" hidden>
-    <h2 id="emptyTitle">Videos are on the way!</h2>
-    <p id="emptyText">Ask a grown-up to add some channels.</p>
-  </div>
-</section>
-
-<section id="watch" class="screen" hidden>
-  <div class="bar">
-    <button class="pill" id="backBtn" aria-label="Back to videos"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 L11 18 L22 29"/></svg>Back</button>
-    <div class="title" id="nowTitle"></div>
-  </div>
-  <div class="stage" id="stage">
-    <div class="frame" id="frame">
-      <div id="player"></div>
-      <div class="shield cover" id="shield">
-        <div class="block t"></div><div class="block b"></div>
-        <div class="bigplay" id="bigPlay"><svg viewBox="0 0 24 24"><path d="M5 3 L21 12 L5 21Z" fill="#1f2a33"/></svg></div>
-        <div class="spinner" id="spin" hidden></div>
-        <div class="ended" id="ended" hidden>
-          <button class="again" id="againBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 A8 8 0 1 0 7 5.5"/><path d="M4 3 V8 H9"/></svg>Watch again</button>
-          <div class="nextrow" id="nextRow"></div>
-        </div>
-        <div class="msg" id="msg" hidden></div>
-      </div>
-    </div>
-  </div>
-  <div class="controls">
-    <button class="round main" id="playBtn" aria-label="Play"><svg viewBox="0 0 24 24" id="playIcon"><path d="M6 4 L20 12 L6 20Z" fill="currentColor"/></svg></button>
-    <div class="seek"><span class="time" id="tNow">0:00</span><input type="range" id="seek" min="0" max="1000" value="0" aria-label="Video position"><span class="time" id="tAll">0:00</span></div>
-    <button class="round" id="fsBtn" aria-label="Big screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15"/></svg></button>
-  </div>
-</section>
+<main>
+  <header>
+    <h1>Pl<span class="o">a</span>yroom</h1>
+    <p class="hello">What do you want to play?</p>
+  </header>
+  <nav class="shelf" id="shelf" aria-label="Apps"></nav>
+</main>
 
 <script>
-(function(){
-"use strict";
-const $=s=>document.querySelector(s);
-const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+/* ===== The app list. To add a new app, copy one entry and change it. =====
+   name: what kids see
+   href: the app's folder in this site (each app lives in its own folder with an index.html)
+   icon: a small SVG picture drawn inside the white box                                  */
+const APPS = [
+  {
+    name: "Crayon Corner",
+    href: "crayon-corner/",
+    icon: `<svg viewBox="0 0 200 200" aria-hidden="true">
+      <g transform="rotate(-75 40 160)"><rect x="40" y="143" width="105" height="34" rx="5" fill="#e63946"/><path d="M145 143 L175 160 L145 177Z" fill="#b82d38"/><rect x="58" y="143" width="6" height="34" fill="#b82d38"/><rect x="122" y="143" width="6" height="34" fill="#b82d38"/></g>
+      <g transform="rotate(-48 40 160)"><rect x="40" y="143" width="105" height="34" rx="5" fill="#ffc93c"/><path d="M145 143 L175 160 L145 177Z" fill="#e0a516"/><rect x="58" y="143" width="6" height="34" fill="#e0a516"/><rect x="122" y="143" width="6" height="34" fill="#e0a516"/></g>
+      <g transform="rotate(-21 40 160)"><rect x="40" y="143" width="105" height="34" rx="5" fill="#2f7fe0"/><path d="M145 143 L175 160 L145 177Z" fill="#225fae"/><rect x="58" y="143" width="6" height="34" fill="#225fae"/><rect x="122" y="143" width="6" height="34" fill="#225fae"/></g>
+      <g transform="rotate(4 40 160)"><rect x="40" y="143" width="105" height="34" rx="5" fill="#8bd450"/><path d="M145 143 L175 160 L145 177Z" fill="#5fa22c"/><rect x="58" y="143" width="6" height="34" fill="#5fa22c"/><rect x="122" y="143" width="6" height="34" fill="#5fa22c"/></g>
+    </svg>`
+  },
+  {
+    name: "Videos",
+    href: "videos/",
+    icon: `<svg viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M70 22 L100 52 L130 22" fill="none" stroke="#ffc93c" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="18" y="52" width="164" height="118" rx="24" fill="#ff5a5f"/>
+      <rect x="36" y="70" width="104" height="82" rx="12" fill="#271f4a"/>
+      <path d="M74 92 L110 111 L74 130Z" fill="#ffc93c"/>
+      <circle cx="160" cy="88" r="9" fill="#ffc93c"/><circle cx="160" cy="118" r="9" fill="#ffc93c"/>
+      <rect x="50" y="170" width="14" height="16" rx="4" fill="#c4434a"/><rect x="136" y="170" width="14" height="16" rx="4" fill="#c4434a"/>
+    </svg>`
+  },
+];
 
-/* ---------- The allowed list (built by the GitHub Action from channels.txt) ---------- */
-let DATA={channels:[],videos:[]},ALLOWED=new Map(),NAMES={};
-let broken=new Set(JSON.parse(store.get("vid-broken")||"[]"));
-let curChannel=store.get("vid-channel")||"all";
-
-fetch("videos.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();})
-  .then(d=>{DATA=d;setup();})
-  .catch(()=>{showEmpty("Can't load the videos","Check the internet connection, then come back.");});
-
-function setup(){
-  DATA.videos=(DATA.videos||[]).filter(v=>!broken.has(v.id));
-  DATA.channels.forEach(c=>NAMES[c.id]=c.name);
-  ALLOWED=new Map(DATA.videos.map(v=>[v.id,v]));
-  if(curChannel!=="all"&&!NAMES[curChannel])curChannel="all";
-  const chips=$("#chips");chips.innerHTML="";
-  const list=[{id:"all",name:"All"}].concat(DATA.channels.filter(c=>DATA.videos.some(v=>v.channel===c.id)));
-  if(list.length>2)list.forEach(c=>{const b=document.createElement("button");b.className="chip";b.textContent=c.name;b.dataset.id=c.id;
-    b.onclick=()=>{curChannel=c.id;store.set("vid-channel",c.id);drawGrid();};chips.appendChild(b);});
-  drawGrid();
-}
-function showEmpty(t,p){$("#grid").hidden=true;$("#empty").hidden=false;$("#emptyTitle").textContent=t;$("#emptyText").textContent=p;}
-function card(v,small){
-  const b=document.createElement("button");b.className="card";b.setAttribute("aria-label",v.title);
-  const fresh=Date.now()-Date.parse(v.published)<3*864e5;
-  b.innerHTML='<div class="thumb"><img loading="lazy" alt=""></div><div class="t"></div>'+(small?'':'<div class="c"></div>');
-  const im=b.querySelector("img");im.onerror=()=>{im.style.visibility="hidden";};im.src="https://i.ytimg.com/vi/"+v.id+"/mqdefault.jpg";
-  if(fresh&&!small)b.querySelector(".thumb").insertAdjacentHTML("beforeend",'<span class="new">New</span>');
-  b.querySelector(".t").textContent=v.title;
-  if(!small)b.querySelector(".c").textContent=NAMES[v.channel]||"";
-  b.onclick=()=>watch(v.id);
-  return b;
-}
-function drawGrid(){
-  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.id===curChannel?"true":"false"));
-  const vids=DATA.videos.filter(v=>curChannel==="all"||v.channel===curChannel);
-  if(!vids.length){showEmpty("Videos are on the way!","Ask a grown-up to add some channels.");return;}
-  $("#empty").hidden=true;const g=$("#grid");g.hidden=false;g.innerHTML="";
-  vids.forEach(v=>g.appendChild(card(v)));
-}
-
-/* ---------- Player ---------- */
-let player=null,ready=false,current=null,state=-1,startT=null,tick=null,wantPlay=false;
-window.onYouTubeIframeAPIReady=()=>{};
-const api=document.createElement("script");api.src="https://www.youtube.com/iframe_api";document.head.appendChild(api);
-
-function whenApi(fn){if(window.YT&&YT.Player)fn();else setTimeout(()=>whenApi(fn),150);}
-function watch(id){
-  const v=ALLOWED.get(id);if(!v)return;           // only videos on the list can ever play
-  current=v;$("#nowTitle").textContent=v.title;
-  $("#browse").hidden=true;$("#watch").hidden=false;fit();
-  showCover("spin");setTime(0,0);
-  wantPlay=true;
-  whenApi(()=>{
-    if(!player){
-      player=new YT.Player("player",{host:DATA.premium?"https://www.youtube.com":"https://www.youtube-nocookie.com",videoId:id,
-        playerVars:{autoplay:1,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,fs:0,disablekb:1,cc_load_policy:0,origin:location.origin},
-        events:{onReady:()=>{ready=true;if(wantPlay)player.playVideo();watchStart();},onStateChange:e=>onState(e.data),onError:onErr}});
-    }else if(ready){player.loadVideoById(id);watchStart();}
-  });
-}
-function watchStart(){clearTimeout(startT);startT=setTimeout(()=>{if(state!==1&&wantPlay)reveal();},2500);}
-// If the video hasn't started after a moment (usually an ad is playing first), show the player
-// so the ad is visible. The shield stays in place, so taps still can't reach YouTube or the ad.
-function reveal(){const sh=$("#shield");sh.classList.remove("cover");sh.style.backgroundImage="";hideAll();}
-function onState(s){
-  state=s;
-  if(s===1){$("#shield").classList.remove("cover");$("#shield").style.backgroundImage="";hideAll();setIcon(true);startTick();}
-  else if(s===3){if($("#shield").classList.contains("cover"))showCover("spin");}
-  else if(s===2){showCover("play");setIcon(false);}
-  else if(s===0){showEnded();setIcon(false);}
-  else if(s===5||s===-1){setIcon(false);}
-}
-function onErr(e){
-  clearTimeout(startT);wantPlay=false;
-  if(current&&(e.data===101||e.data===150||e.data===100)){broken.add(current.id);store.set("vid-broken",JSON.stringify([...broken].slice(-300)));
-    ALLOWED.delete(current.id);DATA.videos=DATA.videos.filter(v=>v.id!==current.id);}
-  showCover("msg","This video can't play here. Pick a different one!");
-}
-function hideAll(){["#bigPlay","#spin","#ended","#msg"].forEach(s=>$(s).hidden=true);}
-function showCover(kind,text){
-  const sh=$("#shield");sh.classList.add("cover");
-  sh.style.backgroundImage=current?'url("https://i.ytimg.com/vi/'+current.id+'/hqdefault.jpg")':"";
-  hideAll();
-  if(kind==="play")$("#bigPlay").hidden=false;
-  if(kind==="spin")$("#spin").hidden=false;
-  if(kind==="msg"){$("#msg").hidden=false;$("#msg").textContent=text;}
-}
-function showEnded(){
-  showCover();$("#ended").hidden=false;const row=$("#nextRow");row.innerHTML="";
-  const same=DATA.videos.filter(v=>v.id!==current.id&&v.channel===current.channel);
-  const others=DATA.videos.filter(v=>v.id!==current.id&&v.channel!==current.channel);
-  same.concat(others).slice(0,3).forEach(v=>row.appendChild(card(v,true)));
-}
-function play(){if(!ready)return;wantPlay=true;player.playVideo();watchStart();}
-function pause(){if(!ready)return;wantPlay=false;player.pauseVideo();}
-$("#shield").addEventListener("click",e=>{
-  if(e.target.closest("button"))return;
-  if(!$("#ended").hidden||!$("#msg").hidden)return;
-  state===1?pause():play();
+const shelf = document.getElementById("shelf");
+const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4 L19 12 L6 20Z" fill="currentColor"/></svg>';
+APPS.forEach(app => {
+  const a = document.createElement("a");
+  a.className = "app";
+  a.href = app.href;
+  a.innerHTML = `<div class="box">${app.icon}</div><div class="plank"></div>
+    <div class="name">${app.name}</div><div class="go">${arrow}Play</div>`;
+  shelf.appendChild(a);
 });
-$("#playBtn").onclick=()=>{state===1?pause():(state===0?replay():play());};
-$("#againBtn").onclick=e=>{e.stopPropagation();replay();};
-function replay(){if(!ready)return;player.seekTo(0,true);play();}
-function setIcon(playing){$("#playIcon").innerHTML=playing?'<rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/>':'<path d="M6 4 L20 12 L6 20Z" fill="currentColor"/>';
-  $("#playBtn").setAttribute("aria-label",playing?"Pause":"Play");}
-
-/* position bar */
-const seek=$("#seek");let dragging=false;
-function fmt(s){s=Math.max(0,Math.floor(s||0));const m=Math.floor(s/60),h=Math.floor(m/60);return (h?h+":"+String(m%60).padStart(2,"0"):m)+":"+String(s%60).padStart(2,"0");}
-function setTime(t,d){$("#tNow").textContent=fmt(t);$("#tAll").textContent=fmt(d);const p=d?t/d:0;if(!dragging)seek.value=Math.round(p*1000);seek.style.setProperty("--p",(seek.value/10)+"%");}
-function startTick(){clearInterval(tick);tick=setInterval(()=>{if(ready&&player.getDuration)setTime(player.getCurrentTime(),player.getDuration());},500);}
-seek.addEventListener("input",()=>{dragging=true;seek.style.setProperty("--p",(seek.value/10)+"%");});
-seek.addEventListener("change",()=>{dragging=false;if(ready){const d=player.getDuration();if(d)player.seekTo(seek.value/1000*d,true);}});
-
-/* big screen */
-$("#fsBtn").onclick=()=>{const w=$("#watch");
-  try{if(document.fullscreenElement)document.exitFullscreen();else(w.requestFullscreen||w.webkitRequestFullscreen).call(w);}catch(e){}};
-document.addEventListener("fullscreenchange",()=>setTimeout(fit,100));
-
-$("#backBtn").onclick=()=>{
-  wantPlay=false;clearTimeout(startT);clearInterval(tick);if(ready)player.stopVideo();
-  try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}
-  $("#watch").hidden=true;$("#browse").hidden=false;drawGrid();
-};
-function fit(){const st=$("#stage").getBoundingClientRect();if(!st.width)return;
-  let w=st.width,h=w*9/16;if(h>st.height){h=st.height;w=h*16/9;}
-  $("#frame").style.width=Math.floor(w)+"px";$("#frame").style.height=Math.floor(h)+"px";}
-new ResizeObserver(fit).observe($("#stage"));
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&state===1)pause();});
-document.addEventListener("contextmenu",e=>e.preventDefault());
-})();
 </script>
 </body>
 </html>
