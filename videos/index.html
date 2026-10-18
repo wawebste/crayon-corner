@@ -329,7 +329,7 @@ function watch(id){
     if(!player){
       player=new YT.Player("player",{host:DATA.premium?"https://www.youtube.com":"https://www.youtube-nocookie.com",videoId:id,
         playerVars:{autoplay:1,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,fs:0,disablekb:1,cc_load_policy:0,origin:location.origin},
-        events:{onReady:()=>{ready=true;if(wantPlay)player.playVideo();watchStart();},onStateChange:e=>onState(e.data),onError:onErr}});
+        events:{onReady:()=>{ready=true;captionsOff();if(wantPlay)player.playVideo();watchStart();},onStateChange:e=>onState(e.data),onError:onErr}});
     }else if(ready){player.loadVideoById(id);watchStart();}
   });
 }
@@ -340,9 +340,18 @@ function reveal(){const sh=$("#shield");sh.classList.remove("cover");sh.style.ba
 // Some tablets (like the Kindle) won't let the app start a video by itself. After a moment the
 // player shows through, and a tap in the middle reaches YouTube's own play button. The edges,
 // where YouTube's title, logo and links sit, stay covered.
+// Turn captions off even when the video or the tablet's settings would show them.
+// (Asking YouTube with cc_load_policy:0 alone isn't always obeyed.)
+function captionsOff(){
+  if(!player)return;
+  try{player.setOption("captions","track",{});}catch(e){}
+  try{player.unloadModule("captions");}catch(e){}
+  try{player.unloadModule("cc");}catch(e){}
+}
 function onState(s){
   state=s;
-  if(s===1){$("#shield").classList.remove("cover","hole");$("#shield").style.backgroundImage="";hideAll();setIcon(true);startTick();}
+  if(s===1){$("#shield").classList.remove("cover","hole");$("#shield").style.backgroundImage="";hideAll();setIcon(true);startTick();
+    captionsOff();setTimeout(captionsOff,1200);}
   else if(s===3){if($("#shield").classList.contains("cover"))showCover("spin");}
   else if(s===2){showCover("play");setIcon(false);}
   else if(s===0){showEnded();setIcon(false);}
