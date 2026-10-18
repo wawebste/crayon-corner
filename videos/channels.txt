@@ -28,6 +28,7 @@
 # video list updates by itself in a minute or two.
 #
 
+@TopsyAndTim
 @familyfunpack
 @jhousejr
 @HalfAsleepChris
@@ -38,25 +39,35 @@
 @BenAndHollyOfficial
 @BlueyOfficialChannel
 @letsgodreamdolls9245
+@OfficialBerenstainBears
+@CuriousGeorge
 
 [Connor]
 # Connor's channels go here, one per line
 @HalfAsleepChris
 @MarkRober
+@TopsyAndTim
 @NickDiGiovanni
+@CrunchLabs
 @BRIGHTSIDEOFFICIAL
 @PeppaPigOfficial
 @BenAndHollyOfficial
 @BlueyOfficialChannel
+@OfficialBerenstainBears
+@CuriousGeorge
 
 [Keegan]
 up next list: yes
 # Keegan's channels go here, one per line
+@TopsyAndTim
 @PeppaPigOfficial
 @BenAndHollyOfficial
 @BlueyOfficialChannel
 @letsgodreamdolls9245
 @familyfunpack
 @jhousejr
+@OfficialBerenstainBears
+@CuriousGeorge
+@usagymnastics
 
 
