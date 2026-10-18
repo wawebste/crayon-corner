@@ -13,5 +13,15 @@
 #
 # The channels below are only examples. Replace them with your own picks.
 
-@SciShowKids
-@Numberblocks
+@familyfunpack
+@jhousejr
+@HalfAsleepChris
+@MarkRober
+@NickDiGiovanni
+@BRIGHTSIDEOFFICIAL
+@PeppaPigOfficial
+@BenAndHollyOfficial
+@BlueyOfficialChannel
+@letsgodreamdolls9245
+
+
