@@ -21,6 +21,7 @@ CHANNELS_FILE = os.path.join(HERE, "channels.txt")
 OUT_FILE = os.path.join(HERE, "videos.json")
 
 DEFAULT_COUNT = 20      # used when channels.txt doesn't say "videos per channel: N"
+MAIN_LIST = "Everyone"
 MAX_COUNT = 40          # upper limit for any one channel (higher numbers are cut to this)
 
 HEADERS = {
@@ -82,10 +83,16 @@ def is_short(video_id):
 
 # ---------- channels.txt ----------
 def parse_channels():
-    """Returns (default_count, premium, [(key, count_or_None, name)])."""
+    """Returns (default_count, premium, {list name: [(key, count_or_None, name)]}).
+
+    Channels before any [Name] header go on the main "Everyone" page. A line like
+    [Connor] starts a separate page with its own channels."""
     default = DEFAULT_COUNT
     premium = False
-    entries = []
+    lists = {MAIN_LIST: []}
+    opts = {MAIN_LIST: {}}
+    entries = lists[MAIN_LIST]
+    cur = MAIN_LIST
     with open(CHANNELS_FILE, encoding="utf-8") as f:
         for raw in f:
             line = raw.split("#", 1)[0].strip()
@@ -99,6 +106,19 @@ def parse_channels():
             if m:
                 premium = m.group(1).lower() in ("yes", "on", "true", "y")
                 continue
+            m = re.match(r"^\[\s*(.+?)\s*\]$", line)
+            if m:
+                name = m.group(1)
+                if name.lower() in ("everyone", "all", "main"):
+                    name = MAIN_LIST
+                entries = lists.setdefault(name, [])
+                opts.setdefault(name, {})
+                cur = name
+                continue
+            m = re.match(r"(?i)^up\s*next(?:\s+list)?\s*[:=]?\s*(\w+)\s*$", line)
+            if m:
+                opts[cur]["upnext"] = m.group(1).lower() in ("yes", "on", "true", "y")
+                continue
             parts = line.split()
             key = parts[0].rstrip("/")
             count = None
@@ -107,7 +127,7 @@ def parse_channels():
                 count = int(rest[0])
                 rest = rest[1:]
             entries.append((key, count, " ".join(rest)))
-    return max(1, min(default, MAX_COUNT)), premium, entries
+    return max(1, min(default, MAX_COUNT)), premium, lists, opts
 
 
 def resolve(key, known):
@@ -244,12 +264,23 @@ def main():
     old_names = {c["id"]: c.get("name", "") for c in old.get("channels", [])}
     known_shorts = set(old.get("shorts", []))
 
-    default_count, premium, entries = parse_channels()
+    default_count, premium, lists, opts = parse_channels()
+    # each channel is fetched once, with the biggest count any page asks for
+    wants, first_name, entries = {}, {}, []
+    for lname, items in lists.items():
+        for key, count, custom_name in items:
+            n = max(1, min(count or default_count, MAX_COUNT))
+            if key not in wants:
+                entries.append(key)
+            wants[key] = max(wants.get(key, 0), n)
+            if custom_name and lname == MAIN_LIST and key not in first_name:
+                first_name[key] = custom_name
     print(f"Videos per channel: {default_count} (unless a channel line sets its own number)")
     print(f"YouTube Premium mode: {'on' if premium else 'off'}")
     channels, videos, resolved = [], [], {}
-    for key, count, custom_name in entries:
-        want = max(1, min(count or default_count, MAX_COUNT))
+    for key in entries:
+        want = wants[key]
+        custom_name = first_name.get(key, "")
         try:
             cid = resolve(key, known_ids)
         except Exception as e:
@@ -294,12 +325,27 @@ def main():
         print(f"{key}: {len(merged)} of {want} videos (from the {source})")
 
     videos.sort(key=lambda v: v["published"], reverse=True)
+    names = {c["id"]: c["name"] for c in channels}
+    out_lists = []
+    for lname, items in lists.items():
+        chans, seen_ids = [], set()
+        for key, count, custom_name in items:
+            cid = resolved.get(key)
+            if not cid or cid not in names or cid in seen_ids:
+                continue
+            seen_ids.add(cid)
+            chans.append({"id": cid, "count": max(1, min(count or default_count, MAX_COUNT)),
+                          "name": custom_name or names[cid]})
+        if True:  # empty pages still get a button; they show "videos are on the way"
+            out_lists.append({"name": lname, "channels": chans, "upnext": bool(opts.get(lname, {}).get("upnext"))})
+            print(f"Page '{lname}': {len(chans)} channels" + (", up next list on" if opts.get(lname, {}).get("upnext") else ""))
     data = {
         "channels": channels,
         "videos": videos,
         "resolved": resolved,
         "shorts": sorted(known_shorts)[-2000:],
         "premium": premium,
+        "lists": out_lists,
     }
     same = {k: old.get(k) for k in data} == data
     data["updated"] = old.get("updated") if same else time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())

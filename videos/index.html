@@ -37,7 +37,13 @@ button:focus-visible,a:focus-visible{outline:4px solid var(--sun);outline-offset
 
 /* ---------- Browse ---------- */
 #browse{overflow-y:auto;gap:16px}
-.top{display:flex;align-items:center;gap:14px;padding-top:6px}
+.top{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding-top:6px}
+.kids{display:flex;flex-wrap:wrap;gap:10px;order:3;flex-basis:100%}
+.kid{display:flex;align-items:center;gap:8px;background:var(--room-3);border-radius:999px;padding:6px 18px 6px 6px;font-family:var(--display);font-weight:800;font-size:20px;box-shadow:0 4px 0 var(--shadow)}
+.kid:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.kid .av{width:38px;height:38px;border-radius:50%;background:var(--av);color:#fff;display:grid;place-items:center;font-size:20px;flex:none}
+.kid .av svg{width:22px;height:22px}
+.kid[aria-pressed="true"]{background:var(--sun);color:#1f2a33}
 .top svg.logo{width:54px;height:54px;flex:none}
 .top h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(30px,5vw,44px);letter-spacing:.5px}
 .pill{display:flex;align-items:center;gap:8px;background:#fff;color:#1f2a33;font-family:var(--display);font-weight:800;font-size:18px;
@@ -61,7 +67,19 @@ button:focus-visible,a:focus-visible{outline:4px solid var(--sun);outline-offset
 .empty p{margin:0;color:var(--ink-soft);font-size:17px;line-height:1.45}
 
 /* ---------- Watch ---------- */
-#watch{background:#0d0a1c;gap:10px}
+#watch{background:#0d0a1c;gap:16px}
+.watchMain{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px}
+#watch.side{flex-direction:row}
+.upnext{width:clamp(230px,28vw,320px);flex:none;display:flex;flex-direction:column;gap:10px;min-height:0;background:var(--room-2);border-radius:18px;padding:12px}
+.upnext h2{margin:0;padding:2px 4px;font-family:var(--display);font-weight:800;font-size:22px}
+.uplist{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding-right:2px}
+.upcard{display:flex;gap:10px;align-items:center;text-align:left;background:var(--room-3);border-radius:14px;padding:6px;min-width:0;flex:none;box-shadow:0 3px 0 var(--shadow)}
+.upcard:active{transform:translateY(2px);box-shadow:0 1px 0 var(--shadow)}
+.upcard .thumb{width:min(46%,170px);flex:none;border-radius:9px}
+.upcard .info{min-width:0;display:flex;flex-direction:column;gap:3px}
+.upcard .t{font-weight:800;font-size:15px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.upcard .c{font-size:13px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (orientation:portrait){#watch.side{flex-direction:column}.upnext{width:auto;max-height:40%}}
 .bar{display:flex;align-items:center;gap:14px;min-width:0}
 .bar .title{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
@@ -105,7 +123,8 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 <section id="browse" class="screen">
   <div class="top">
     <svg class="logo" viewBox="0 0 54 54" aria-hidden="true"><path d="M18 6 L27 14 L36 6" fill="none" stroke="#ffc93c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="14" width="48" height="34" rx="8" fill="#ff5a5f"/><rect x="9" y="19" width="30" height="24" rx="4" fill="#fff"/><path d="M20 25 L30 31 L20 37Z" fill="#ff5a5f"/><circle cx="45" cy="24" r="3" fill="#ffc93c"/><circle cx="45" cy="34" r="3" fill="#ffc93c"/></svg>
-    <h1>Videos</h1>
+    <h1 id="pageTitle">Videos</h1>
+    <div class="kids" id="kids" role="toolbar" aria-label="Whose videos" hidden></div>
     <a class="pill" href="../" aria-label="Back to all apps"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"><path d="M5 17 L18 6 L31 17"/><path d="M9 15 V30 H27 V15"/><path d="M15 30 V22 H21 V30"/></svg>All apps</a>
   </div>
   <div class="chips" id="chips" role="toolbar" aria-label="Channels"></div>
@@ -117,6 +136,7 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 </section>
 
 <section id="watch" class="screen" hidden>
+ <div class="watchMain">
   <div class="bar">
     <button class="pill" id="backBtn" aria-label="Back to videos"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 L11 18 L22 29"/></svg>Back</button>
     <div class="title" id="nowTitle"></div>
@@ -141,6 +161,11 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     <div class="seek"><span class="time" id="tNow">0:00</span><input type="range" id="seek" min="0" max="1000" value="0" aria-label="Video position"><span class="time" id="tAll">0:00</span></div>
     <button class="round" id="fsBtn" aria-label="Big screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15"/></svg></button>
   </div>
+ </div>
+ <aside class="upnext" id="upnext" hidden aria-label="More videos">
+  <h2>Up next</h2>
+  <div class="uplist" id="upList"></div>
+ </aside>
 </section>
 
 <script>
@@ -150,9 +175,11 @@ const $=s=>document.querySelector(s);
 const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 
 /* ---------- The allowed list (built by the GitHub Action from channels.txt) ---------- */
-let DATA={channels:[],videos:[]},ALLOWED=new Map(),NAMES={};
+let DATA={channels:[],videos:[]},ALLOWED=new Map(),NAMES={},LISTS=[],LIST=null;
 let broken=new Set(JSON.parse(store.get("vid-broken")||"[]"));
 let curChannel=store.get("vid-channel")||"all";
+let curList=store.get("vid-list")||"Everyone";
+const AV_COLORS=["#3ec7d6","#ff5a5f","#8bd450","#9b5de5","#ff7b29","#2f7fe0"];
 
 fetch("videos.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();})
   .then(d=>{DATA=d;setup();})
@@ -160,14 +187,64 @@ fetch("videos.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;
 
 function setup(){
   DATA.videos=(DATA.videos||[]).filter(v=>!broken.has(v.id));
-  DATA.channels.forEach(c=>NAMES[c.id]=c.name);
   ALLOWED=new Map(DATA.videos.map(v=>[v.id,v]));
-  if(curChannel!=="all"&&!NAMES[curChannel])curChannel="all";
+  // Pages: "Everyone" plus one per [Name] section in channels.txt
+  LISTS=(DATA.lists&&DATA.lists.length)?DATA.lists:[{name:"Everyone",channels:(DATA.channels||[]).map(c=>({id:c.id,count:999,name:c.name}))}];
+  if(!LISTS.some(l=>l.name===curList))curList=LISTS[0].name;
+  const kids=$("#kids");kids.innerHTML="";
+  if(LISTS.length>1){
+    kids.hidden=false;
+    LISTS.forEach((l,i)=>{
+      const b=document.createElement("button");b.className="kid";b.dataset.name=l.name;
+      const main=l.name==="Everyone";
+      b.style.setProperty("--av",main?"#ffc93c":AV_COLORS[(i-1)%AV_COLORS.length]);
+      b.innerHTML='<span class="av"></span><span class="n"></span>';
+      if(main)b.querySelector(".av").innerHTML='<svg viewBox="0 0 24 24"><path d="M12 2.5 L14.9 8.6 L21.5 9.3 L16.6 13.8 L18 20.4 L12 17 L6 20.4 L7.4 13.8 L2.5 9.3 L9.1 8.6Z" fill="#1f2a33"/></svg>';
+      else b.querySelector(".av").textContent=l.name.charAt(0).toUpperCase();
+      b.querySelector(".n").textContent=l.name;
+      b.onclick=()=>{if(curList===l.name)return;curList=l.name;store.set("vid-list",l.name);curChannel="all";store.set("vid-channel","all");showList();};
+      kids.appendChild(b);
+    });
+  }
+  showList();
+}
+function showList(){
+  LIST=LISTS.find(l=>l.name===curList)||LISTS[0];
+  LIST.map={};NAMES={};LIST.channels.forEach(c=>{LIST.map[c.id]=c;NAMES[c.id]=c.name;});
+  document.querySelectorAll(".kid").forEach(k=>k.setAttribute("aria-pressed",k.dataset.name===LIST.name?"true":"false"));
+  $("#pageTitle").textContent=LIST.name==="Everyone"?"Videos":LIST.name+"'s Videos";
+  const mine=listVideos();
+  if(curChannel!=="all"&&!mine.some(v=>v.channel===curChannel))curChannel="all";
   const chips=$("#chips");chips.innerHTML="";
-  const list=[{id:"all",name:"All"}].concat(DATA.channels.filter(c=>DATA.videos.some(v=>v.channel===c.id)));
+  const list=[{id:"all",name:"All"}].concat(LIST.channels.filter(c=>mine.some(v=>v.channel===c.id)));
   if(list.length>2)list.forEach(c=>{const b=document.createElement("button");b.className="chip";b.textContent=c.name;b.dataset.id=c.id;
     b.onclick=()=>{curChannel=c.id;store.set("vid-channel",c.id);drawGrid();};chips.appendChild(b);});
   drawGrid();
+}
+// the videos on the current page: each channel's newest videos, up to that page's count
+function listVideos(){
+  if(!LIST)return [];
+  const per={};
+  return DATA.videos.filter(v=>{const c=LIST.map[v.channel];if(!c)return false;per[v.channel]=(per[v.channel]||0)+1;return per[v.channel]<=c.count;});
+}
+// The "Up next" side list (turned on per page in channels.txt): more from the same
+// channel first, newest first, then everything else on this page.
+function renderUpNext(){
+  const on=!!(LIST&&LIST.upnext);
+  $("#watch").classList.toggle("side",on);$("#upnext").hidden=!on;
+  if(!on)return;
+  const pool=listVideos().filter(v=>v.id!==current.id);
+  const list=pool.filter(v=>v.channel===current.channel).concat(pool.filter(v=>v.channel!==current.channel));
+  const box=$("#upList");box.innerHTML="";
+  list.forEach(v=>{
+    const b=document.createElement("button");b.className="upcard";b.setAttribute("aria-label",v.title);
+    b.innerHTML='<div class="thumb"><img loading="lazy" alt=""></div><div class="info"><div class="t"></div><div class="c"></div></div>';
+    const im=b.querySelector("img");im.onerror=()=>{im.style.visibility="hidden";};im.src="https://i.ytimg.com/vi/"+v.id+"/mqdefault.jpg";
+    b.querySelector(".t").textContent=v.title;b.querySelector(".c").textContent=NAMES[v.channel]||"";
+    b.onclick=()=>watch(v.id);
+    box.appendChild(b);
+  });
+  box.scrollTop=0;
 }
 function showEmpty(t,p){$("#grid").hidden=true;$("#empty").hidden=false;$("#emptyTitle").textContent=t;$("#emptyText").textContent=p;}
 function card(v,small){
@@ -183,7 +260,7 @@ function card(v,small){
 }
 function drawGrid(){
   document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.id===curChannel?"true":"false"));
-  const vids=DATA.videos.filter(v=>curChannel==="all"||v.channel===curChannel);
+  const vids=listVideos().filter(v=>curChannel==="all"||v.channel===curChannel);
   if(!vids.length){showEmpty("Videos are on the way!","Ask a grown-up to add some channels.");return;}
   $("#empty").hidden=true;const g=$("#grid");g.hidden=false;g.innerHTML="";
   vids.forEach(v=>g.appendChild(card(v)));
@@ -198,6 +275,7 @@ function whenApi(fn){if(window.YT&&YT.Player)fn();else setTimeout(()=>whenApi(fn
 function watch(id){
   const v=ALLOWED.get(id);if(!v)return;           // only videos on the list can ever play
   current=v;$("#nowTitle").textContent=v.title;
+  renderUpNext();
   $("#browse").hidden=true;$("#watch").hidden=false;fit();
   showCover("spin");setTime(0,0);
   wantPlay=true;
@@ -238,8 +316,9 @@ function showCover(kind,text){
 }
 function showEnded(){
   showCover();$("#ended").hidden=false;const row=$("#nextRow");row.innerHTML="";
-  const same=DATA.videos.filter(v=>v.id!==current.id&&v.channel===current.channel);
-  const others=DATA.videos.filter(v=>v.id!==current.id&&v.channel!==current.channel);
+  const pool=listVideos();
+  const same=pool.filter(v=>v.id!==current.id&&v.channel===current.channel);
+  const others=pool.filter(v=>v.id!==current.id&&v.channel!==current.channel);
   same.concat(others).slice(0,3).forEach(v=>row.appendChild(card(v,true)));
 }
 function play(){if(!ready)return;wantPlay=true;player.playVideo();watchStart();}

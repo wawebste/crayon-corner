@@ -5,13 +5,28 @@
 #   the channel's web address                 e.g.  https://www.youtube.com/@SciShowKids
 #   the channel ID (starts with UC)           looks like  UCxxxxxxxxxxxxxxxxxxxxxx
 #
-# You can add a friendly name after it, and the kids will see that name instead:
+# HOW MANY VIDEOS: the "videos per channel" line below sets it for every channel (up to 40).
+# To give one channel a different number, put the number right after it:
+#   @SciShowKids   40
+#
+# You can also add a friendly name at the end, and the kids will see that name instead:
 #   @SciShowKids   Science Show
+#   @SciShowKids   40   Science Show
+#
+# KIDS' PAGES: a line like [Connor] starts that kid's own page. Channels listed
+# under it show only on that page. Channels above the first [Name] line are on the
+# main "Everyone" page. The same channel can be on more than one page, and the
+# numbers and friendly names work the same way on every page.
+#
+# UP NEXT LIST: put "up next list: yes" under a kid's [Name] line to show a
+# scrollable list of more videos beside the video they're watching.
+#
+# YOUTUBE PREMIUM: if you pay for YouTube Premium and sign in to YouTube in the
+# tablet's browser, change "no" to "yes" below so videos play without ads.
 #
 # Lines starting with # are ignored. Save (commit) the file and the
 # video list updates by itself in a minute or two.
 #
-# The channels below are only examples. Replace them with your own picks.
 
 @familyfunpack
 @jhousejr
@@ -24,4 +39,11 @@
 @BlueyOfficialChannel
 @letsgodreamdolls9245
 
+[Connor]
+# Connor's channels go here, one per line
+
+
+[Keegan]
+up next list: yes
+# Keegan's channels go here, one per line
 
