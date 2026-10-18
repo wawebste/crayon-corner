@@ -71,7 +71,6 @@ button:focus-visible,a:focus-visible{outline:4px solid var(--sun);outline-offset
 .shield{position:absolute;inset:0;display:grid;place-items:center;background:transparent}
 .shield.cover{background:#000 center/cover no-repeat}
 .shield.cover::before{content:"";position:absolute;inset:0;background:rgba(13,10,28,.45)}
-.shield.through{pointer-events:none}
 .block{position:absolute;left:0;right:0;pointer-events:auto}
 .block.t{top:0;height:24%}.block.b{bottom:0;height:24%}
 .bigplay{position:relative;width:min(26vmin,150px);height:min(26vmin,150px);border-radius:50%;background:var(--sun);display:grid;place-items:center;box-shadow:0 8px 0 var(--sun-deep);pointer-events:none}
@@ -204,19 +203,19 @@ function watch(id){
   wantPlay=true;
   whenApi(()=>{
     if(!player){
-      player=new YT.Player("player",{host:"https://www.youtube-nocookie.com",videoId:id,
+      player=new YT.Player("player",{host:DATA.premium?"https://www.youtube.com":"https://www.youtube-nocookie.com",videoId:id,
         playerVars:{autoplay:1,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,fs:0,disablekb:1,cc_load_policy:0,origin:location.origin},
         events:{onReady:()=>{ready=true;if(wantPlay)player.playVideo();watchStart();},onStateChange:e=>onState(e.data),onError:onErr}});
     }else if(ready){player.loadVideoById(id);watchStart();}
   });
 }
-function watchStart(){clearTimeout(startT);startT=setTimeout(()=>{if(state!==1&&state!==3&&wantPlay)tapThrough();},2500);}
-// If the tablet blocks starting the video from our button, let the next tap land on YouTube's own
-// play button in the middle. The top and bottom strips stay covered so its links can't be reached.
-function tapThrough(){showCover("play");$("#shield").classList.add("through");}
+function watchStart(){clearTimeout(startT);startT=setTimeout(()=>{if(state!==1&&wantPlay)reveal();},2500);}
+// If the video hasn't started after a moment (usually an ad is playing first), show the player
+// so the ad is visible. The shield stays in place, so taps still can't reach YouTube or the ad.
+function reveal(){const sh=$("#shield");sh.classList.remove("cover");sh.style.backgroundImage="";hideAll();}
 function onState(s){
   state=s;
-  if(s===1){$("#shield").classList.remove("through","cover");$("#shield").style.backgroundImage="";hideAll();setIcon(true);startTick();}
+  if(s===1){$("#shield").classList.remove("cover");$("#shield").style.backgroundImage="";hideAll();setIcon(true);startTick();}
   else if(s===3){if($("#shield").classList.contains("cover"))showCover("spin");}
   else if(s===2){showCover("play");setIcon(false);}
   else if(s===0){showEnded();setIcon(false);}
@@ -230,7 +229,7 @@ function onErr(e){
 }
 function hideAll(){["#bigPlay","#spin","#ended","#msg"].forEach(s=>$(s).hidden=true);}
 function showCover(kind,text){
-  const sh=$("#shield");sh.classList.add("cover");sh.classList.remove("through");
+  const sh=$("#shield");sh.classList.add("cover");
   sh.style.backgroundImage=current?'url("https://i.ytimg.com/vi/'+current.id+'/hqdefault.jpg")':"";
   hideAll();
   if(kind==="play")$("#bigPlay").hidden=false;
