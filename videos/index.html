@@ -100,6 +100,9 @@ html,body{overscroll-behavior-y:none}
 .shield.cover::before{content:"";position:absolute;inset:0;background:rgba(13,10,28,.45)}
 .block{position:absolute;left:0;right:0;pointer-events:auto}
 .block.t{top:0;height:24%}.block.b{bottom:0;height:24%}
+.block.l,.block.r{top:24%;bottom:24%;width:30%;right:auto;display:none}.block.l{left:0}.block.r{left:auto;right:0}
+/* "hole" mode: only the middle of the player passes taps to YouTube's own play button */
+.shield.hole{pointer-events:none}.shield.hole .block.l,.shield.hole .block.r{display:block}
 .bigplay{position:relative;width:min(26vmin,150px);height:min(26vmin,150px);border-radius:50%;background:var(--sun);display:grid;place-items:center;box-shadow:0 8px 0 var(--sun-deep);pointer-events:none}
 .bigplay svg{width:46%;height:46%;margin-left:8%}
 .spinner{position:relative;width:70px;height:70px;border-radius:50%;border:8px solid rgba(255,255,255,.25);border-top-color:var(--sun);animation:spin 1s linear infinite}
@@ -155,7 +158,7 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     <div class="frame" id="frame">
       <div id="player"></div>
       <div class="shield cover" id="shield">
-        <div class="block t"></div><div class="block b"></div>
+        <div class="block t"></div><div class="block b"></div><div class="block l"></div><div class="block r"></div>
         <div class="bigplay" id="bigPlay"><svg viewBox="0 0 24 24"><path d="M5 3 L21 12 L5 21Z" fill="#1f2a33"/></svg></div>
         <div class="spinner" id="spin" hidden></div>
         <div class="ended" id="ended" hidden>
@@ -333,10 +336,13 @@ function watch(id){
 function watchStart(){clearTimeout(startT);startT=setTimeout(()=>{if(state!==1&&wantPlay)reveal();},2500);}
 // If the video hasn't started after a moment (usually an ad is playing first), show the player
 // so the ad is visible. The shield stays in place, so taps still can't reach YouTube or the ad.
-function reveal(){const sh=$("#shield");sh.classList.remove("cover");sh.style.backgroundImage="";hideAll();}
+function reveal(){const sh=$("#shield");sh.classList.remove("cover");sh.style.backgroundImage="";hideAll();sh.classList.add("hole");}
+// Some tablets (like the Kindle) won't let the app start a video by itself. After a moment the
+// player shows through, and a tap in the middle reaches YouTube's own play button. The edges,
+// where YouTube's title, logo and links sit, stay covered.
 function onState(s){
   state=s;
-  if(s===1){$("#shield").classList.remove("cover");$("#shield").style.backgroundImage="";hideAll();setIcon(true);startTick();}
+  if(s===1){$("#shield").classList.remove("cover","hole");$("#shield").style.backgroundImage="";hideAll();setIcon(true);startTick();}
   else if(s===3){if($("#shield").classList.contains("cover"))showCover("spin");}
   else if(s===2){showCover("play");setIcon(false);}
   else if(s===0){showEnded();setIcon(false);}
@@ -350,7 +356,7 @@ function onErr(e){
 }
 function hideAll(){["#bigPlay","#spin","#ended","#msg"].forEach(s=>$(s).hidden=true);}
 function showCover(kind,text){
-  const sh=$("#shield");sh.classList.add("cover");
+  const sh=$("#shield");sh.classList.remove("hole");sh.classList.add("cover");
   sh.style.backgroundImage=current?'url("https://i.ytimg.com/vi/'+current.id+'/hqdefault.jpg")':"";
   hideAll();
   if(kind==="play")$("#bigPlay").hidden=false;
@@ -391,6 +397,7 @@ $("#fsBtn").onclick=()=>{const w=$("#watch");
 document.addEventListener("fullscreenchange",()=>setTimeout(fit,100));
 
 $("#backBtn").onclick=()=>{
+  $("#shield").classList.remove("hole");
   wantPlay=false;clearTimeout(startT);clearInterval(tick);if(ready)player.stopVideo();
   try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}
   $("#watch").hidden=true;$("#browse").hidden=false;drawGrid();
