@@ -41,9 +41,22 @@
 
 [Connor]
 # Connor's channels go here, one per line
-
+@HalfAsleepChris
+@MarkRober
+@NickDiGiovanni
+@BRIGHTSIDEOFFICIAL
+@PeppaPigOfficial
+@BenAndHollyOfficial
+@BlueyOfficialChannel
 
 [Keegan]
 up next list: yes
 # Keegan's channels go here, one per line
+@PeppaPigOfficial
+@BenAndHollyOfficial
+@BlueyOfficialChannel
+@letsgodreamdolls9245
+@familyfunpack
+@jhousejr
+
 
