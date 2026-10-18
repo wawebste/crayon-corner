@@ -36,7 +36,16 @@ button:focus-visible,a:focus-visible{outline:4px solid var(--sun);outline-offset
   padding-block:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-bottom,0px))}
 
 /* ---------- Browse ---------- */
-#browse{overflow-y:auto;gap:16px}
+#browse{overflow-y:auto;gap:16px;overscroll-behavior-y:contain}
+html,body{overscroll-behavior-y:none}
+.pull{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:5;width:56px;height:56px;margin-left:-28px;border-radius:50%;
+  background:var(--sun);color:#1f2a33;display:grid;place-items:center;box-shadow:0 5px 0 var(--sun-deep);
+  transform:translateY(-90px);opacity:0;pointer-events:none}
+.pull svg{width:30px;height:30px}
+.pull.spin svg{animation:spin .8s linear infinite}
+.pull.back{transition:transform .25s ease,opacity .25s ease}
+#grid{transition:none}
+#grid.settle{transition:transform .25s ease}
 .top{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding-top:6px}
 .kids{display:flex;flex-wrap:wrap;gap:10px;order:3;flex-basis:100%}
 .kid{display:flex;align-items:center;gap:8px;background:var(--room-3);border-radius:999px;padding:6px 18px 6px 6px;font-family:var(--display);font-weight:800;font-size:20px;box-shadow:0 4px 0 var(--shadow)}
@@ -120,6 +129,7 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 </head>
 <body>
 
+<div class="pull" id="pull" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17 5.8"/><path d="M20 3 V8 H15"/></svg></div>
 <section id="browse" class="screen">
   <div class="top">
     <svg class="logo" viewBox="0 0 54 54" aria-hidden="true"><path d="M18 6 L27 14 L36 6" fill="none" stroke="#ffc93c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="14" width="48" height="34" rx="8" fill="#ff5a5f"/><rect x="9" y="19" width="30" height="24" rx="4" fill="#fff"/><path d="M20 25 L30 31 L20 37Z" fill="#ff5a5f"/><circle cx="45" cy="24" r="3" fill="#ffc93c"/><circle cx="45" cy="34" r="3" fill="#ffc93c"/></svg>
@@ -179,6 +189,7 @@ let DATA={channels:[],videos:[]},ALLOWED=new Map(),NAMES={},LISTS=[],LIST=null;
 let broken=new Set(JSON.parse(store.get("vid-broken")||"[]"));
 let curChannel=store.get("vid-channel")||"all";
 let curList=store.get("vid-list")||"Everyone";
+let ORDER=null; // after a refresh, the shuffled order of video ids
 const AV_COLORS=["#3ec7d6","#ff5a5f","#8bd450","#9b5de5","#ff7b29","#2f7fe0"];
 
 fetch("videos.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();})
@@ -260,11 +271,43 @@ function card(v,small){
 }
 function drawGrid(){
   document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.id===curChannel?"true":"false"));
-  const vids=listVideos().filter(v=>curChannel==="all"||v.channel===curChannel);
+  let vids=listVideos().filter(v=>curChannel==="all"||v.channel===curChannel);
+  if(ORDER){const pos=new Map(ORDER.map((id,i)=>[id,i]));vids=vids.slice().sort((a,b)=>(pos.has(a.id)?pos.get(a.id):-1)-(pos.has(b.id)?pos.get(b.id):-1));}
   if(!vids.length){showEmpty("Videos are on the way!","Ask a grown-up to add some channels.");return;}
   $("#empty").hidden=true;const g=$("#grid");g.hidden=false;g.innerHTML="";
   vids.forEach(v=>g.appendChild(card(v)));
 }
+
+/* ---------- Pull down to refresh ---------- */
+// Drag the video list down from the top and let go: it re-checks for new videos
+// and mixes up the order so the page feels fresh.
+(function(){
+  const browse=$("#browse"),pull=$("#pull"),grid=$("#grid");
+  const LIMIT=80;let y0=null,dy=0,busy=false;
+  function show(d){const p=Math.min(d/LIMIT,1);
+    pull.style.transform="translateY("+(Math.min(d,LIMIT*1.4)*0.9-60)+"px) rotate("+(d*3)+"deg)";pull.style.opacity=Math.min(1,p*1.4);
+    grid.style.transform="translateY("+Math.min(d*0.5,LIMIT)+"px)";}
+  function reset(){pull.classList.add("back");grid.classList.add("settle");pull.style.transform="translateY(-90px)";pull.style.opacity="0";grid.style.transform="";
+    setTimeout(()=>{pull.classList.remove("back","spin");grid.classList.remove("settle");},300);}
+  browse.addEventListener("touchstart",e=>{if(busy||browse.scrollTop>0||e.touches.length>1){y0=null;return;}y0=e.touches[0].clientY;dy=0;},{passive:true});
+  browse.addEventListener("touchmove",e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;
+    if(dy<=0||browse.scrollTop>0){if(dy<0)y0=null;show(0);return;}
+    e.preventDefault();show(dy);},{passive:false});
+  function end(){if(y0===null)return;y0=null;
+    if(dy<LIMIT){reset();return;}
+    busy=true;pull.classList.add("back","spin");pull.style.transform="translateY("+(LIMIT*0.9-50)+"px)";grid.classList.add("settle");grid.style.transform="translateY(40px)";
+    const started=Date.now();
+    fetch("videos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null).then(d=>{
+      setTimeout(()=>{
+        if(d){DATA=d;setup();}
+        const ids=DATA.videos.map(v=>v.id);
+        for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
+        ORDER=ids;drawGrid();browse.scrollTop=0;busy=false;reset();
+      },Math.max(0,700-(Date.now()-started)));
+    });
+  }
+  browse.addEventListener("touchend",end);browse.addEventListener("touchcancel",end);
+})();
 
 /* ---------- Player ---------- */
 let player=null,ready=false,current=null,state=-1,startT=null,tick=null,wantPlay=false;
