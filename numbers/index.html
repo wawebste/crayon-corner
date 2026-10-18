@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Number Fun</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{font-family:'Baloo 2','Comic Sans MS',system-ui,sans-serif;background:linear-gradient(160deg,#fff4d6 0%,#ffe3ef 50%,#dff1ff 100%);color:#3b2f5c}
+  button{font-family:inherit;border:none;cursor:pointer;color:inherit}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column}
+  .screen.on{display:flex}
+
+  .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;min-height:70px}
+  .bar h2{margin:0;font-size:32px;flex:1;text-align:center}
+  .back{width:58px;height:58px;border-radius:50%;background:#fff;font-size:30px;box-shadow:0 4px 0 #d7cde8}
+  .back:active{transform:translateY(3px);box-shadow:0 1px 0 #d7cde8}
+  .spacer{width:58px}
+  .stars{min-width:58px;font-size:28px;text-align:right}
+
+  /* Menu */
+  #menu{align-items:center;justify-content:center;gap:22px;padding:16px}
+  #menu h1{margin:0;font-size:clamp(48px,9vw,84px);line-height:1;text-shadow:0 5px 0 #ffd0e2}
+  #menu h1 span:nth-child(1){color:#ff6b6b}#menu h1 span:nth-child(2){color:#ffa94d}#menu h1 span:nth-child(3){color:#4dabf7}
+  .cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+  .card{width:220px;height:200px;border-radius:30px;font-size:30px;font-weight:800;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;line-height:1.1;box-shadow:0 8px 0 rgba(0,0,0,.18)}
+  .card b{font-size:72px;line-height:1}
+  .card:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .range{display:flex;gap:10px;align-items:center;font-size:24px}
+  .pill{padding:6px 22px;border-radius:999px;background:#fff;font-size:26px;font-weight:800;box-shadow:0 4px 0 #d7cde8}
+  .pill.sel{background:#7c5cff;color:#fff;box-shadow:0 4px 0 #5a3fd1}
+  .home{position:absolute;top:14px;left:16px;text-decoration:none;color:#3b2f5c;background:#fff;padding:8px 18px;border-radius:999px;font-size:22px;font-weight:800;box-shadow:0 4px 0 #d7cde8}
+
+  /* Play area */
+  .prompt{text-align:center;font-size:34px;font-weight:800;margin:0 12px;min-height:46px}
+  .play{flex:1;display:flex;align-items:center;justify-content:center;gap:34px;flex-wrap:wrap;padding:10px 16px 20px}
+  .stage{display:grid;gap:12px;justify-content:center}
+  .item{position:relative;background:#fff;border-radius:22px;box-shadow:0 5px 0 #e2d8f0;display:flex;align-items:center;justify-content:center;padding:0;animation:popin .35s backwards}
+  .item:disabled{opacity:1}
+  .item.done{background:#eafbe9;box-shadow:0 5px 0 #a7e3a2;transform:scale(.94)}
+  .tag{position:absolute;top:-10px;right:-10px;min-width:38px;height:38px;border-radius:19px;color:#fff;font-size:24px;font-weight:800;line-height:38px;text-align:center;padding:0 6px;animation:popin .25s;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+  .sizeL .item{width:124px;height:124px;font-size:82px}
+  .sizeM .item{width:98px;height:98px;font-size:62px}
+  .sizeS .item{width:74px;height:74px;font-size:44px}
+  .sizeS .tag{min-width:30px;height:30px;line-height:30px;font-size:19px;top:-8px;right:-8px}
+  .big{font-size:150px;font-weight:800;line-height:1;min-width:140px;text-align:center;text-shadow:0 6px 0 rgba(0,0,0,.08)}
+  .pulse{animation:pulse .35s}
+  .again{display:none;padding:12px 40px;border-radius:999px;background:#38d9a9;color:#fff;font-size:34px;font-weight:800;box-shadow:0 6px 0 #20a37c;margin:0 auto 18px}
+  .again.on{display:block;animation:popin .3s}
+  .again:active{transform:translateY(4px);box-shadow:0 2px 0 #20a37c}
+
+  /* Quiz */
+  .choices{display:flex;gap:22px;justify-content:center;padding-bottom:22px}
+  .choice{width:120px;height:120px;border-radius:28px;color:#fff;font-size:72px;font-weight:800;box-shadow:0 7px 0 rgba(0,0,0,.2)}
+  .choice:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+  .choice.right{animation:bounce .6s;outline:6px solid #fff}
+  .choice.wrong{animation:shake .45s}
+
+  /* Numbers grid */
+  .grid{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:6px 20px 20px;align-content:center;max-width:820px;width:100%;margin:0 auto}
+  .tile{aspect-ratio:1.3;border-radius:24px;color:#fff;font-size:56px;font-weight:800;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+  .tile:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+  .grid.twenty .tile{aspect-ratio:1.6;font-size:46px}
+  .numside{display:flex;flex-direction:column;align-items:center}
+  .word{font-size:44px;font-weight:800;margin-top:-6px}
+  .arrow{width:74px;height:74px;border-radius:50%;background:#fff;font-size:40px;box-shadow:0 5px 0 #d7cde8}
+  .arrow:disabled{opacity:.3}
+  .countbtn{padding:8px 26px;border-radius:999px;background:#7c5cff;color:#fff;font-size:26px;font-weight:800;box-shadow:0 5px 0 #5a3fd1;margin-top:12px}
+  .countbtn:active{transform:translateY(4px);box-shadow:0 1px 0 #5a3fd1}
+
+  .cf{position:fixed;top:-20px;width:14px;height:20px;border-radius:4px;pointer-events:none;animation:fall linear forwards;z-index:9}
+
+  @keyframes popin{from{transform:scale(0)}70%{transform:scale(1.12)}}
+  @keyframes pulse{50%{transform:scale(1.25)}}
+  @keyframes bounce{30%{transform:scale(1.25)}60%{transform:scale(.95)}}
+  @keyframes shake{20%,60%{transform:translateX(-12px)}40%,80%{transform:translateX(12px)}}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  @media (max-height:620px){
+    .big{font-size:110px}.sizeL .item{width:104px;height:104px;font-size:68px}
+    .sizeM .item{width:84px;height:84px;font-size:52px}.sizeS .item{width:62px;height:62px;font-size:36px}
+    .choice{width:100px;height:100px;font-size:60px}.card{height:170px}.card b{font-size:60px}
+  }
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<section class="screen on" id="menu">
+  <a class="home" href="../index.html">🏠 All Apps</a>
+  <h1><span>1</span><span>2</span><span>3</span> Number Fun</h1>
+  <div class="cards">
+    <button class="card" style="background:#ff6b6b" onclick="go('count')"><b>👆</b>Count<br>With Me</button>
+    <button class="card" style="background:#4dabf7" onclick="go('numbers')"><b>🔢</b>Numbers</button>
+    <button class="card" style="background:#69db7c" onclick="go('quiz')"><b>❓</b>How<br>Many?</button>
+  </div>
+  <div class="range">
+    <button class="pill" data-max="5" onclick="setMax(5)">1–5</button>
+    <button class="pill" data-max="10" onclick="setMax(10)">1–10</button>
+    <button class="pill" data-max="20" onclick="setMax(20)">1–20</button>
+  </div>
+</section>
+
+<!-- COUNT WITH ME -->
+<section class="screen" id="count">
+  <div class="bar"><button class="back" onclick="go('menu')">⬅</button><h2>Count With Me</h2><div class="spacer"></div></div>
+  <div class="prompt" id="cPrompt"></div>
+  <div class="play">
+    <div class="stage" id="cStage"></div>
+    <div class="big" id="cBig"></div>
+  </div>
+  <button class="again" id="cAgain" onclick="newCount()">Again! ▶</button>
+</section>
+
+<!-- NUMBERS GRID -->
+<section class="screen" id="numbers">
+  <div class="bar"><button class="back" onclick="go('menu')">⬅</button><h2>Pick a Number</h2><div class="spacer"></div></div>
+  <div class="grid" id="nGrid"></div>
+</section>
+
+<!-- NUMBER DETAIL -->
+<section class="screen" id="detail">
+  <div class="bar"><button class="back" onclick="go('numbers')">⬅</button><h2></h2><div class="spacer"></div></div>
+  <div class="play">
+    <button class="arrow" id="dPrev" onclick="openNum(numN-1)">◀</button>
+    <div class="numside">
+      <button class="big" id="dBig" style="background:none" onclick="sayNum()"></button>
+      <div class="word" id="dWord"></div>
+      <button class="countbtn" onclick="countAloud()">Count them 🔊</button>
+    </div>
+    <div class="stage" id="dStage"></div>
+    <button class="arrow" id="dNext" onclick="openNum(numN+1)">▶</button>
+  </div>
+</section>
+
+<!-- HOW MANY QUIZ -->
+<section class="screen" id="quiz">
+  <div class="bar"><button class="back" onclick="go('menu')">⬅</button><h2>How Many?</h2><div class="stars" id="stars">⭐ 0</div></div>
+  <div class="prompt" id="qPrompt"></div>
+  <div class="play"><div class="stage" id="qStage"></div></div>
+  <div class="choices" id="qChoices"></div>
+</section>
+
+<script>
+const WORDS=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
+const THINGS=[['🍎','apple','apples'],['🐶','puppy','puppies'],['⭐','star','stars'],['🐟','fish','fish'],['🚗','car','cars'],['🦋','butterfly','butterflies'],['🌸','flower','flowers'],['🐱','kitty','kitties'],['🎈','balloon','balloons'],['🦄','unicorn','unicorns'],['🚀','rocket','rockets'],['🐞','ladybug','ladybugs'],['🍓','strawberry','strawberries'],['⛵','boat','boats'],['🦖','dinosaur','dinosaurs'],['🍪','cookie','cookies'],['🐸','frog','frogs'],['🚒','fire truck','fire trucks'],['🐥','chick','chicks'],['🍌','banana','bananas']];
+const COLORS=['#ff6b6b','#ffa94d','#f5b700','#40c057','#20c997','#339af0','#5c7cfa','#be4bdb','#f06595'];
+
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const color=i=>COLORS[(i-1)%COLORS.length];
+const name=(th,n)=>n===1?th[1]:th[2];
+
+let max=10, screen='menu', stars=0, run=0, lastThing=null;
+try{const m=+localStorage.getItem('numberfun-max'); if([5,10,20].includes(m)) max=m;}catch(e){}
+
+/* ---------- sound & speech ---------- */
+let ac;
+function tone(f,d,type){
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=type||'sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.18,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.12));
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime+(d||0.12));
+  }catch(e){}
+}
+function cheer(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.2),i*110));}
+function speak(t){
+  try{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.rate=0.9; u.pitch=1.15;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function pulse(el){el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');}
+function confetti(){
+  for(let i=0;i<32;i++){
+    const s=document.createElement('div'); s.className='cf';
+    s.style.left=Math.random()*100+'vw'; s.style.background=pick(COLORS);
+    s.style.animationDuration=(1.3+Math.random())+'s'; s.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(s); setTimeout(()=>s.remove(),2800);
+  }
+}
+function newThing(){let t; do{t=pick(THINGS);}while(t===lastThing); lastThing=t; return t;}
+
+/* ---------- navigation ---------- */
+function go(id){
+  screen=id; run++;
+  try{speechSynthesis.cancel();}catch(e){}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+  if(id==='count') newCount();
+  if(id==='quiz') newQuiz();
+  if(id==='numbers') buildGrid();
+}
+function setMax(m){
+  max=m; try{localStorage.setItem('numberfun-max',m);}catch(e){}
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('sel',+p.dataset.max===m));
+  tone(600);
+}
+
+/* ---------- objects on screen ---------- */
+function buildStage(el,n,th,onCount){
+  el.innerHTML='';
+  el.className='stage size'+(n<=5?'L':n<=10?'M':'S');
+  el.style.gridTemplateColumns='repeat('+Math.min(n,5)+',auto)';   // rows of 5 make counting easier
+  let c=0;
+  for(let i=0;i<n;i++){
+    const b=document.createElement('button');
+    b.className='item'; b.textContent=th[0]; b.style.animationDelay=(i*45)+'ms';
+    b.onclick=()=>{
+      if(b.classList.contains('done')) return;
+      c++; markItem(b,c); tone(380+c*35);
+      onCount&&onCount(c);
+    };
+    el.appendChild(b);
+  }
+}
+function markItem(b,c){
+  b.classList.add('done');
+  const t=document.createElement('span'); t.className='tag'; t.textContent=c; t.style.background=color(c);
+  b.appendChild(t);
+}
+
+/* ---------- Count With Me ---------- */
+function newCount(){
+  const n=rnd(1,max), th=newThing(), big=$('#cBig');
+  big.textContent=''; $('#cAgain').classList.remove('on');
+  $('#cPrompt').textContent='Tap each '+th[1]+' to count!';
+  speak("Let's count the "+th[2]+"!");
+  buildStage($('#cStage'),n,th,c=>{
+    big.textContent=c; big.style.color=color(c); pulse(big);
+    if(c===n){
+      $('#cPrompt').textContent=n+' '+name(th,n)+'!';
+      speak(n+' '+name(th,n)+'!'); cheer(); confetti();
+      $('#cAgain').classList.add('on');
+    } else speak(String(c));
+  });
+}
+
+/* ---------- Numbers ---------- */
+let numN=1;
+function buildGrid(){
+  const g=$('#nGrid'); g.innerHTML=''; g.classList.toggle('twenty',max>10);
+  for(let i=1;i<=max;i++){
+    const b=document.createElement('button');
+    b.className='tile'; b.textContent=i; b.style.background=color(i);
+    b.onclick=()=>openNum(i);
+    g.appendChild(b);
+  }
+}
+function openNum(i){
+  if(i<1||i>max) return;
+  run++; numN=i;
+  if(screen!=='detail'){screen='detail'; document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='detail'));}
+  const th=THINGS[(i-1)%THINGS.length];
+  $('#dBig').textContent=i; $('#dBig').style.color=color(i); pulse($('#dBig'));
+  $('#dWord').textContent=WORDS[i];
+  $('#dPrev').disabled=i===1; $('#dNext').disabled=i===max;
+  buildStage($('#dStage'),i,th,c=>{speak(c===i?c+' '+name(th,i)+'!':String(c)); if(c===i){cheer();}});
+  sayNum();
+}
+function sayNum(){const th=THINGS[(numN-1)%THINGS.length]; speak(numN+'. '+numN+' '+name(th,numN)+'.'); pulse($('#dBig'));}
+function countAloud(){
+  const my=++run, th=THINGS[(numN-1)%THINGS.length];
+  buildStage($('#dStage'),numN,th,null);
+  const items=[...$('#dStage').children];
+  items.forEach((b,k)=>setTimeout(()=>{
+    if(my!==run) return;
+    markItem(b,k+1); tone(380+(k+1)*35); speak(String(k+1));
+    if(k+1===numN) setTimeout(()=>{ if(my===run){ speak(numN+' '+name(th,numN)+'!'); cheer(); } },800);
+  },700+k*900));
+}
+
+/* ---------- How Many? ---------- */
+function newQuiz(){
+  if(screen!=='quiz') return;
+  const n=rnd(1,max), th=newThing(); let locked=false;
+  $('#qPrompt').textContent='How many '+th[2]+'?';
+  speak('How many '+th[2]+'?');
+  buildStage($('#qStage'),n,th,c=>speak(String(c)));   // kids can tap to count before answering
+  const opts=new Set([n]);
+  while(opts.size<3){const d=n+pick([-3,-2,-1,1,2,3]); if(d>=1&&d<=Math.max(max,4)) opts.add(d);}
+  const row=$('#qChoices'); row.innerHTML='';
+  [...opts].sort(()=>Math.random()-.5).forEach((v,i)=>{
+    const b=document.createElement('button');
+    b.className='choice'; b.textContent=v; b.style.background=COLORS[(i*3+1)%COLORS.length];
+    b.onclick=()=>{
+      if(locked) return;
+      if(v===n){
+        locked=true; b.classList.add('right'); stars++; $('#stars').textContent='⭐ '+stars;
+        speak('Yes! '+n+' '+name(th,n)+'!'); cheer(); confetti();
+        const my=run; setTimeout(()=>{ if(my===run) newQuiz(); },2600);
+      } else {
+        b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+        tone(180,0.25,'triangle'); speak('Try again! Tap them to count.');
+      }
+    };
+    row.appendChild(b);
+  });
+}
+
+setMax(max);
+</script>
+</body>
+</html>
